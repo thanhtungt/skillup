@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>SkillUp – Kỹ năng thuyết trình cho sinh viên</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f8ee;
+            --card: #fff;
+            --ink: #1c2b21;
+            --mut: #5f7064;
+            --line: #dbe7d3;
+            --soft: #e4efdc;
+            --g: #2c5a38;
+            --gt: #fff;
+            --y: #f2c14e;
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px)
+        }
+
+        @media(prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0f1611;
+                --card: #18231b;
+                --ink: #e8f0e9;
+                --mut: #9fb2a4;
+                --line: #2b3d30;
+                --soft: #1e2e23;
+                --g: #86cf96;
+                --gt: #0e1a11
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #0f1611;
+            --card: #18231b;
+            --ink: #e8f0e9;
+            --mut: #9fb2a4;
+            --line: #2b3d30;
+            --soft: #1e2e23;
+            --g: #86cf96;
+            --gt: #0e1a11
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0
+        }
+
+        body {
+            font-family: "Be Vietnam Pro", system-ui, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.55
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0 0 auto;
+            height: env(safe-area-inset-top, 0px);
+            background: var(--bg);
+            z-index: 30
+        }
+
+        header {
+            position: sticky;
+            top: env(safe-area-inset-top, 0px);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--line)
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--g);
+            text-decoration: none;
+            white-space: nowrap;
+            line-height: 1.1
+        }
+
+        .logo small {
+            display: block;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--mut)
+        }
+
+        nav {
+            display: flex;
+            gap: 2px;
+            overflow-x: auto;
+            flex: 1;
+            scrollbar-width: none
+        }
+
+        nav a {
+            padding: 8px 13px;
+            border-radius: 99px;
+            color: var(--ink);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap
+        }
+
+        nav a.on {
+            background: var(--soft);
+            color: var(--g);
+            font-weight: 700
+        }
+
+        button {
+            font: inherit;
+            color: inherit;
+            background: none;
+            border: 0;
+            cursor: pointer
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--y);
+            outline-offset: 2px
+        }
+
+        .btn {
+            background: var(--g);
+            color: var(--gt);
+            padding: 11px 22px;
+            border-radius: 99px;
+            font-weight: 700
+        }
+
+        .btn.o {
+            background: none;
+            border: 1.5px solid var(--g);
+            color: var(--g)
+        }
+
+        main {
+            max-width: 1080px;
+            margin: auto;
+            padding: 22px 16px 40px
+        }
+
+        .v {
+            display: none
+        }
+
+        .v.on {
+            display: block;
+            animation: in .25s
+        }
+
+        @keyframes in {
+            from {
+                opacity: 0
+            }
+        }
+
+        h1 {
+            font-size: clamp(26px, 4.5vw, 40px);
+            line-height: 1.2;
+            font-weight: 800
+        }
+
+        h1 .k {
+            display: block;
+            font-size: clamp(40px, 8vw, 68px);
+            color: var(--g);
+            letter-spacing: -1px;
+            margin-bottom: 6px
+        }
+
+        h2 {
+            font-size: 26px;
+            font-weight: 800
+        }
+
+        h3 {
+            font-size: 17px
+        }
+
+        .mut {
+            color: var(--mut);
+            font-size: 14px
+        }
+
+        .sub {
+            color: var(--mut);
+            margin: 4px 0 18px
+        }
+
+        .card {
+            display: block;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+            color: inherit;
+            text-decoration: none
+        }
+
+        a.card:hover {
+            border-color: var(--g)
+        }
+
+        .grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr))
+        }
+
+        .two {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            margin-bottom: 14px;
+            align-items: start
+        }
+
+        .hero {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            align-items: center;
+            background: var(--soft);
+            border-radius: 32px;
+            padding: clamp(20px, 4vw, 40px);
+            margin-bottom: 16px
+        }
+
+        .hero p {
+            margin: 14px 0 20px;
+            max-width: 46ch
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .art {
+            position: relative;
+            min-height: 280px;
+            display: grid;
+            place-items: center;
+            font-size: 110px
+        }
+
+        .fc {
+            position: absolute;
+            background: var(--card);
+            padding: 9px 15px;
+            border-radius: 99px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 6px 16px #0002;
+            animation: fl 5s ease-in-out infinite
+        }
+
+        @keyframes fl {
+            50% {
+                transform: translateY(-9px)
+            }
+        }
+
+        .fc+.fc {
+            animation-delay: -1.5s
+        }
+
+        .fc+.fc+.fc {
+            animation-delay: -3s
+        }
+
+        .ft b {
+            font-size: 30px;
+            display: block
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px
+        }
+
+        .chip {
+            padding: 8px 16px;
+            border-radius: 99px;
+            border: 1.5px solid var(--line);
+            background: var(--card);
+            font-size: 14px;
+            font-weight: 500
+        }
+
+        .chip:hover,
+        .chip.on {
+            background: var(--g);
+            color: var(--gt);
+            border-color: var(--g)
+        }
+
+        input {
+            font: inherit;
+            color: inherit;
+            background: var(--card);
+            border: 1.5px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 14px;
+            width: 100%
+        }
+
+        input[type=checkbox] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--g)
+        }
+
+        .bar {
+            height: 10px;
+            border-radius: 9px;
+            background: var(--line);
+            overflow: hidden;
+            margin: 8px 0;
+            flex: 1
+        }
+
+        .bar i {
+            display: block;
+            height: 100%;
+            background: var(--g);
+            transition: width .5s
+        }
+
+        .th {
+            font-size: 52px;
+            background: var(--soft);
+            border-radius: 14px;
+            text-align: center;
+            padding: 12px;
+            margin-bottom: 12px
+        }
+
+        .cc .mut {
+            display: flex;
+            gap: 14px
+        }
+
+        .cc .btn {
+            margin-top: 14px;
+            width: 100%
+        }
+
+        .row,
+        .post {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px
+        }
+
+        .f {
+            flex: 1;
+            min-width: 170px
+        }
+
+        .ic {
+            font-size: 32px
+        }
+
+        .av {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--g);
+            color: var(--gt);
+            display: grid;
+            place-items: center;
+            font-weight: 700
+        }
+
+        .lk {
+            padding: 6px 14px;
+            border-radius: 99px;
+            background: var(--soft);
+            font-weight: 600
+        }
+
+        .ring {
+            --p: 0;
+            width: 124px;
+            height: 124px;
+            border-radius: 50%;
+            background: conic-gradient(var(--g) calc(var(--p)*1%), var(--line) 0);
+            display: grid;
+            place-items: center;
+            flex: none
+        }
+
+        .ring b {
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            background: var(--card);
+            display: grid;
+            place-items: center;
+            font-size: 26px
+        }
+
+        .tm {
+            font-size: 56px;
+            font-weight: 800;
+            color: var(--g);
+            font-variant-numeric: tabular-nums;
+            margin: 6px 0 10px
+        }
+
+        .goal {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 7px 0
+        }
+
+        .rs {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .rs span {
+            width: 140px;
+            font-size: 14px
+        }
+
+        .rs b {
+            width: 46px;
+            text-align: right
+        }
+
+        details {
+            border-bottom: 1px solid var(--line);
+            padding: 12px 0
+        }
+
+        summary {
+            font-weight: 600;
+            cursor: pointer
+        }
+
+        details p {
+            margin-top: 8px;
+            color: var(--mut)
+        }
+
+        #t {
+            position: fixed;
+            left: 50%;
+            bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+            transform: translate(-50%, 24px);
+            background: var(--g);
+            color: var(--gt);
+            padding: 10px 20px;
+            border-radius: 99px;
+            font-weight: 600;
+            opacity: 0;
+            transition: .3s;
+            z-index: 40;
+            pointer-events: none;
+            max-width: 92vw;
+            text-align: center
+        }
+
+        #t.on {
+            opacity: 1;
+            transform: translate(-50%, 0)
+        }
+
+        footer {
+            text-align: center;
+            color: var(--mut);
+            font-size: 13px;
+            padding: 0 16px 30px
+        }
+
+        textarea {
+            font: inherit;
+            color: inherit;
+            background: var(--card);
+            border: 1.5px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 14px;
+            width: 100%;
+            resize: vertical;
+            min-height: 76px
+        }
+
+        label.fl {
+            display: block;
+            font-weight: 600;
+            margin: 14px 0 6px
+        }
+
+        .pl {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            align-items: start;
+            margin-top: 12px
+        }
+
+        @media(max-width: 760px) {
+            .pl {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .vid {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 18px;
+            overflow: hidden
+        }
+
+        .vid iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0
+        }
+
+        .ls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1.5px solid var(--line);
+            background: var(--card);
+            margin-bottom: 8px
+        }
+
+        .ls.on {
+            border-color: var(--g);
+            background: var(--soft)
+        }
+
+        .ai {
+            margin-top: 6px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: var(--soft);
+            font-size: 14px;
+            white-space: pre-wrap;
+            flex-basis: 100%
+        }
+
+        .chip:disabled {
+            opacity: .55;
+            cursor: not-allowed
+        }
+
+        .chip:disabled:hover {
+            background: var(--card);
+            color: inherit;
+            border-color: var(--line)
+        }
+
+        .ft {
+            width: 100%;
+            text-align: left
+        }
+
+        .art {
+            background: radial-gradient(circle at 50% 45%, var(--card) 0, transparent 68%)
+        }
+
+        select {
+            font: inherit;
+            color: inherit;
+            background: var(--card);
+            border: 1.5px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 14px;
+            width: 100%
+        }
+
+        .evf {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))
+        }
+
+        .board {
+            padding: 28px 18px 18px;
+            border: 2.5px dashed var(--line);
+            border-radius: 28px;
+            background: radial-gradient(var(--line) 1.2px, transparent 1.5px) 0 0/22px 22px
+        }
+
+        .nt {
+            position: relative;
+            color: #1f2937;
+            border-radius: 8px 8px 22px 8px;
+            padding: 20px 18px 14px;
+            box-shadow: 0 10px 22px #0003;
+            transition: transform .2s
+        }
+
+        .nt:nth-child(odd) {
+            transform: rotate(-1.2deg)
+        }
+
+        .nt:nth-child(even) {
+            transform: rotate(1deg)
+        }
+
+        .nt:hover {
+            transform: rotate(0) scale(1.02)
+        }
+
+        .nt::before {
+            content: '📍';
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            font-size: 24px;
+            transform: translateX(-50%)
+        }
+
+        .c-y {
+            background: #fde76a
+        }
+
+        .c-c {
+            background: #8fe9fb
+        }
+
+        .c-p {
+            background: #f8b6de
+        }
+
+        .c-g {
+            background: #b4f0c2
+        }
+
+        .nt.done {
+            background: #8fb3a1;
+            opacity: .88
+        }
+
+        .nh {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            opacity: .75
+        }
+
+        .nt h3 {
+            margin: 4px 0 6px;
+            font-size: 19px;
+            line-height: 1.25
+        }
+
+        .nt p {
+            font-size: 14px;
+            margin: 0 0 12px
+        }
+
+        .ni {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: #0001;
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .nf {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #0002
+        }
+
+        .nf button {
+            font-size: 20px;
+            padding: 2px 6px
+        }
+
+        .nf .hb {
+            font-size: 14px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 99px;
+            background: #0001
+        }
+
+        .nf .hb.on {
+            background: #ff7a1a66
+        }
+
+        .btn:disabled,
+        input:disabled,
+        select:disabled {
+            opacity: .55;
+            cursor: not-allowed
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            * {
+                animation: none !important;
+                transition: none !important
+            }
+        }
+
+        /* SkillUp rewards + video practice upgrade */
+        .reward-hero {
+            background: linear-gradient(120deg, #173f2c, #2e7650);
+            color: #fff;
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 14px 0 20px
+        }
+
+        .coin-pill {
+            background: #fff;
+            color: #173f2c;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-weight: 800;
+            font-size: 18px;
+            white-space: nowrap;
+            box-shadow: 0 5px 16px #0002
+        }
+
+        .reward-card {
+            overflow: hidden;
+            padding: 0;
+            display: flex;
+            flex-direction: column
+        }
+
+        .reward-card img {
+            width: 100%;
+            height: 175px;
+            object-fit: cover;
+            display: block;
+            background: #eee
+        }
+
+        .reward-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            flex: 1
+        }
+
+        .reward-price {
+            font-weight: 800;
+            color: var(--g);
+            font-size: 18px
+        }
+
+        .reward-card .btn {
+            width: 100%;
+            margin-top: auto
+        }
+
+        .reward-tag {
+            font-size: 11px;
+            letter-spacing: .04em;
+            font-weight: 800;
+            color: var(--g);
+            background: var(--soft);
+            padding: 4px 9px;
+            border-radius: 99px;
+            display: inline-block;
+            width: max-content
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+            margin: 14px 0 22px
+        }
+
+        .video-card {
+            padding: 12px
+        }
+
+        .video-card h3 {
+            margin: 10px 2px 4px
+        }
+
+        .video-card p {
+            margin: 0 2px 5px
+        }
+
+        .scenario {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 16px;
+            background: var(--card)
+        }
+
+        .scenario h3 {
+            margin: 6px 0
+        }
+
+        .scenario .tip {
+            display: none;
+            background: var(--soft);
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 10px
+        }
+
+        .scenario.open .tip {
+            display: block
+        }
+
+        .reward-note {
+            font-size: 12px;
+            color: var(--mut)
+        }
+
+        @media(max-width: 600px) {
+            .reward-hero {
+                padding: 18px
+            }
+
+            .reward-card img {
+                height: 155px
+            }
+        }
+
+        .battle-layout {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px
+        }
+
+        .battle-start {
+            background: linear-gradient(135deg, #182344, #38256d);
+            color: white;
+            border: 0
+        }
+
+        .battle-start .mut {
+            color: #d8d8ee
+        }
+
+        .battle-start .btn {
+            background: #e6c35b;
+            color: #24213a;
+            margin-top: 16px
+        }
+
+        .battle-stats {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+            margin-top: 18px
+        }
+
+        .battle-stats div {
+            display: grid;
+            text-align: center
+        }
+
+        .battle-stats b {
+            font-size: 25px;
+            color: var(--g)
+        }
+
+        .battle-stats span {
+            font-size: 12px;
+            color: var(--mut)
+        }
+
+        .battle-arena {
+            margin-top: 16px
+        }
+
+        .versus {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            text-align: center;
+            padding: 12px 0 20px
+        }
+
+        .player {
+            display: grid;
+            justify-items: center;
+            gap: 4px
+        }
+
+        .avatar-big {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--soft);
+            font-size: 34px
+        }
+
+        .player span {
+            font-size: 13px;
+            color: var(--mut)
+        }
+
+        .vs {
+            font-size: 32px;
+            font-weight: 900;
+            color: #8755d8
+        }
+
+        .topic-box {
+            background: var(--soft);
+            padding: 18px;
+            border-radius: 16px;
+            margin-bottom: 16px
+        }
+
+        .topic-box h3 {
+            font-size: 20px;
+            margin: 7px 0
+        }
+
+        .classroom {
+            min-height: 300px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: linear-gradient(#d9e6ed 0 55%, #aab9c0 55% 100%);
+            position: relative;
+            padding: 16px;
+            text-align: center;
+            color: #23323a
+        }
+
+        .classroom-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px
+        }
+
+        .classroom-top span:last-child {
+            color: #14864d
+        }
+
+        .screen-board {
+            margin: 22px auto 0;
+            width: min(72%, 520px);
+            height: 125px;
+            background: #172b45;
+            color: white;
+            border: 8px solid #b9c6cb;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            box-shadow: 0 5px 0 #7e929d
+        }
+
+        .screen-board small {
+            color: #b9d5e9;
+            font-size: 10px
+        }
+
+        .screen-board b {
+            font-size: clamp(15px, 3vw, 23px)
+        }
+
+        .screen-board span {
+            font-size: 10px;
+            color: #d3e0e9
+        }
+
+        .lectern {
+            position: absolute;
+            bottom: 47px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #8a5939;
+            color: white;
+            padding: 10px 22px 7px;
+            border-radius: 8px 8px 2px 2px;
+            font-size: 24px;
+            box-shadow: 0 4px 0 #68412e
+        }
+
+        .lectern small {
+            display: block;
+            font-size: 8px;
+            letter-spacing: 1px
+        }
+
+        .audience {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            background: #42596a;
+            padding: 8px 4px 2px;
+            font-size: 30px
+        }
+
+        .battle-controls {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding: 16px 0
+        }
+
+        .battle-controls div {
+            display: grid
+        }
+
+        .battle-controls .mut {
+            font-size: 12px
+        }
+
+        .battle-clock {
+            font-size: 27px;
+            font-variant-numeric: tabular-nums
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .score-row input {
+            grid-column: 1/-1;
+            padding: 0;
+            accent-color: var(--g)
+        }
+
+        @media(max-width: 650px) {
+            .battle-layout {
+                grid-template-columns: 1fr
+            }
+
+            .battle-stats {
+                gap: 5px
+            }
+
+            .classroom {
+                min-height: 260px
+            }
+
+            .screen-board {
+                height: 105px
+            }
+
+            .audience {
+                font-size: 23px
+            }
+        }
+
+        .room-panel {
+            margin: 14px 0;
+            background: linear-gradient(135deg, #f2f6ff, #fff);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+            color: #1c2b21
+        }
+
+        .room-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 12px
+        }
+
+        .room-code {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            color: #4b3a9b;
+            background: #eeeaff;
+            padding: 8px 14px;
+            border-radius: 12px;
+            display: inline-block
+        }
+
+        .theory {
+            background: var(--soft);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 12px 0
+        }
+
+        .theory h3 {
+            margin-bottom: 8px
+        }
+
+        .theory ul {
+            padding-left: 20px;
+            margin: 8px 0
+        }
+
+        .theory li {
+            margin: 5px 0
+        }
+
+        @media(max-width: 650px) {
+            .room-code {
+                font-size: 23px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a class="logo" href="#trang-chu">
+            🎤 SkillUp<small>Thuyết trình tự tin</small>
+        </a>
+        <nav>
+            <a href="#trang-chu">Trang chủ</a>
+            <a href="#khoa-hoc">Khóa học</a>
+            <a href="#hoc-tap">Học tập</a>
+            <a href="#ho-so">Hồ sơ</a>
+            <a href="#cong-dong">Cộng đồng</a>
+            <a href="#dau-truong">🎮 Trò chơi</a>
+            <a href="#doi-qua">Đổi quà</a>
+            <a href="#su-kien">Sự kiện</a>
+            <a href="#danh-gia">Đánh giá kỹ năng</a>
+            <a href="#ve-chung-toi">Về chúng tôi</a>
+        </nav>
+        <button class="chip" id="th" aria-label="Đổi giao diện sáng hoặc tối">🌓</button>
+    </header>
+    <main>
+        <section class="v" id="v-trang-chu">
+            <div class="hero">
+                <div>
+                    <h1>
+                        <span class="k">Thuyết trình</span>Tự tin đứng trước đám đông, từ lớp học đến buổi bảo vệ đồ án!
+                    </h1>
+                    <p class="mut" style="font-size:16px">Học miễn phí bằng video chọn lọc, tập nói bấm giờ và hỏi đáp
+                        cùng cộng đồng. Không cần đăng ký tài khoản.</p>
+                    <div class="btns">
+                        <a class="btn" href="#khoa-hoc" style="text-decoration:none">Học ngay</a>
+                        <a class="btn o" href="#danh-gia" style="text-decoration:none">Đánh giá kỹ năng</a>
+                    </div>
+                </div>
+                <div class="art">
+                    🎤
+                    <button class="fc" data-k="cb" style="top:8%;left:2%">🧩 Nội dung</button>
+                    <button class="fc" data-k="sl" style="top:16%;right:0">🎞️ Slide</button>
+                    <button class="fc" data-k="gv" style="bottom:14%;left:0">🗣️ Giọng nói</button>
+                    <button class="fc" data-k="ht" style="bottom:6%;right:4%">😌 Tự tin</button>
+                </div>
+            </div>
+            <h2 style="font-size:22px;margin:24px 0 12px">Lộ trình 4 bước để thuyết trình tốt</h2>
+            <div class="grid">
+                <button class="card ft" data-k="cb">
+                    <b>1️⃣</b>
+                    <h3>Chuẩn bị nội dung</h3>
+                    <p class="mut">Chọn thông điệp, xây dựng mở bài, thân bài và kết bài.</p>
+                </button>
+                <button class="card ft" data-k="sl">
+                    <b>2️⃣</b>
+                    <h3>Thiết kế slide</h3>
+                    <p class="mut">Slide gọn, dễ nhìn, hỗ trợ lời nói thay vì thay thế.</p>
+                </button>
+                <button class="card ft" data-k="gv">
+                    <b>3️⃣</b>
+                    <h3>Luyện giọng và cơ thể</h3>
+                    <p class="mut">Giọng rõ ràng, ánh mắt, cử chỉ tự nhiên và tập bấm giờ.</p>
+                </button>
+                <button class="card ft" data-k="ph">
+                    <b>4️⃣</b>
+                    <h3>Hỏi đáp và tự tin</h3>
+                    <p class="mut">Bình tĩnh trả lời câu hỏi khó và xử lý sự cố bất ngờ.</p>
+                </button>
+            </div>
+        </section>
+        <section class="v" id="v-khoa-hoc">
+            <div id="cl">
+                <h2>Khóa học thuyết trình</h2>
+                <p class="sub">Học theo từng kỹ năng: đọc lý thuyết, nắm các bước, xem video minh họa rồi thực hành.
+                    Miễn phí, không cần đăng ký.</p>
+                <input id="sq" placeholder="Tìm kiếm khóa học…" aria-label="Tìm kiếm khóa học"
+                    style="margin-bottom:12px">
+                <div class="chips" id="chips"></div>
+                <div class="grid" id="cg"></div>
+            </div>
+            <div id="cp"></div>
+        </section>
+        <section class="v" id="v-hoc-tap">
+            <h2>Xin chào! 👋</h2>
+            <p class="sub" id="dt"></p>
+            <div class="two">
+                <div class="card row">
+                    <div class="ring" id="ring">
+                        <b id="rv">0%</b>
+                    </div>
+                    <div class="f">
+                        <h3>Tiến độ học tập</h3>
+                        <p class="mut" id="ps"></p>
+                        <button class="mut" data-rs style="text-decoration:underline;margin-top:6px">Đặt lại tiến
+                            độ</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Mục tiêu tuần này</h3>
+                    <p class="mut" id="gs"></p>
+                    <label class="goal">
+                        <input type="checkbox">Học xong 1 khóa học
+                    </label>
+                    <label class="goal">
+                        <input type="checkbox">Tập nói bấm giờ ít nhất 3 lần
+                    </label>
+                    <label class="goal">
+                        <input type="checkbox">Hỏi hoặc chia sẻ 1 bài trong cộng đồng
+                    </label>
+                </div>
+            </div>
+            <div class="two">
+                <div>
+                    <h3 style="margin-bottom:10px">Khóa học đang học</h3>
+                    <div id="my"></div>
+                </div>
+                <div class="card" style="text-align:center">
+                    <h3>Bấm giờ tập thuyết trình 🎤</h3>
+                    <p class="mut">Chọn thời lượng, đứng lên và nói to như đang trình bày thật</p>
+                    <div class="chips" style="justify-content:center;margin-top:10px" id="dur">
+                        <button class="chip on" data-t="180">3 phút</button>
+                        <button class="chip" data-t="300">5 phút</button>
+                        <button class="chip" data-t="600">10 phút</button>
+                    </div>
+                    <div class="tm" id="tm">03:00</div>
+                    <button class="btn" id="tg">Bắt đầu</button>
+                    <button class="btn o" id="tr">Đặt lại</button>
+                </div>
+            </div>
+        </section>
+        <section class="v" id="v-ho-so">
+            <h2>Hồ sơ cá nhân</h2>
+            <p class="sub">Không cần tạo tài khoản. Thông tin chỉ lưu trên thiết bị của bạn.</p>
+            <div class="card" style="max-width:640px">
+                <label class="fl" for="pf-n" style="margin-top:0">Tên người dùng</label>
+                <input id="pf-n" maxlength="40" placeholder="Bạn muốn được gọi là gì?">
+                <label class="fl" for="pf-s">Bạn học ở đâu?</label>
+                <input id="pf-s" maxlength="80" placeholder="Trường, ngành, năm học…">
+                <label class="fl" for="pf-d">Khó khăn bạn đang gặp</label>
+                <textarea id="pf-d" maxlength="300"
+                    placeholder="Ví dụ: run khi đứng trước lớp, quên lời, slide rối…"></textarea>
+                <label class="fl">Kỹ năng thuyết trình bạn muốn học</label>
+                <div class="chips" id="pf-k"></div>
+                <button class="btn" id="pf-b">Lưu hồ sơ</button>
+            </div>
+            <div id="pf-r"></div>
+        </section>
+        <section class="v" id="v-cong-dong">
+            <h2>Cộng đồng SkillUp</h2>
+            <p class="sub">Hỏi đáp, chia sẻ kinh nghiệm thuyết trình. Đặt câu hỏi là AI gợi ý trả lời ngay!</p>
+            <div class="card row">
+                <input class="f" id="pt" placeholder="Bạn muốn hỏi hay chia sẻ gì về thuyết trình?" maxlength="120"
+                    aria-label="Nội dung bài viết">
+                <button class="btn" id="pb">Đăng bài</button>
+            </div>
+            <div id="pl"></div>
+            <div style="margin-top:24px" id="video-situations">
+                <h2>🎬 Video hỏi đáp & tình huống thực tế</h2>
+                <p class="sub">Xem tình huống, quan sát cách xử lý và thử áp dụng vào phần thuyết trình của bạn.</p>
+                <div class="video-grid" id="situVideoGrid"></div>
+                <h3 style="margin:20px 0 10px">🎭 Thử thách xử lý tình huống</h3>
+                <p class="mut" style="margin-bottom:12px">Chọn “Xem gợi ý” để tham khảo cách trả lời. Hoàn thành mỗi
+                    tình huống nhận 10 xu SkillUp.</p>
+                <div class="grid" id="scenarioGrid"></div>
+            </div>
+        </section>
+        <section class="v" id="v-dau-truong">
+            <h2>🎮 SkillUp Battle – Đấu trường thuyết trình</h2>
+            <p class="sub">Ghép cặp ngẫu nhiên, nhận chủ đề đối kháng và luyện trình bày trong không gian lớp học mô
+                phỏng.</p>
+            <div class="battle-layout">
+                <div class="card battle-start">
+                    <span class="reward-tag">QUICK MATCH · RANDOM BATTLE</span>
+                    <h2 style="margin:8px 0">Sẵn sàng lên sàn?</h2>
+                    <p class="mut">Nhấn tìm đối thủ để hệ thống ghép bạn với một người chơi ngẫu nhiên (bản demo mô
+                        phỏng), chia phe và chọn chủ đề tranh biện.</p>
+                    <button class="btn" id="findOpponent">⚔️ Tìm đối thủ ngẫu nhiên</button>
+                    <div class="mut" id="matchStatus" style="margin-top:10px">Đang chờ bạn tham gia trận đấu.</div>
+                </div>
+                <div class="card">
+                    <h3>🏆 Thành tích đấu trường</h3>
+                    <div class="battle-stats">
+                        <div>
+                            <b id="battleWins">0</b>
+                            <span>Trận hoàn thành</span>
+                        </div>
+                        <div>
+                            <b id="battleBest">—</b>
+                            <span>Điểm cao nhất</span>
+                        </div>
+                        <div>
+                            <b id="battleCoins">0</b>
+                            <span>Xu từ Battle</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="room-panel">
+                <h3>🏠 Tạo phòng / tham gia phòng</h3>
+                <p class="mut" style="margin-top:4px">Tạo phòng riêng để rủ bạn bè cùng luyện tranh biện. Bản hiện tại
+                    mô phỏng phòng trên cùng thiết bị; để bạn bè ở xa tham gia thật cần máy chủ trực tuyến.</p>
+                <div class="room-actions">
+                    <div>
+                        <label class="fl" for="roomHost">Tên người tạo phòng</label>
+                        <input id="roomHost" placeholder="Ví dụ: Minh Anh" maxlength="30">
+                        <button class="btn" id="createRoom" style="margin-top:9px;width:100%">＋ Tạo phòng mới</button>
+                    </div>
+                    <div>
+                        <label class="fl" for="roomCodeInput">Mã phòng</label>
+                        <input id="roomCodeInput" placeholder="Nhập mã 6 ký tự" maxlength="6"
+                            style="text-transform:uppercase">
+                        <button class="btn o" id="joinRoom" style="margin-top:9px;width:100%">Tham gia phòng</button>
+                    </div>
+                </div>
+                <div id="roomInfo" style="margin-top:12px" class="mut">Chưa có phòng nào được tạo.</div>
+            </div>
+            <div class="card" style="margin:14px 0">
+                <h3>🎤 Luyện thuyết trình một mình</h3>
+                <p class="mut" style="margin:5px 0 12px">Chọn chủ đề, tự đứng trình bày trước màn hình và tự đánh giá
+                    sau khi hoàn thành.</p>
+                <div class="row">
+                    <select id="soloTopic"
+                        style="flex:1;min-width:220px;padding:11px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)"></select>
+                    <button class="btn" id="soloStart">Bắt đầu luyện một mình</button>
+                </div>
+                <div id="soloNote" class="mut" style="margin-top:8px">Thời lượng: 60 giây chuẩn bị + 2 phút trình bày.
+                </div>
+            </div>
+            <div class="card battle-arena" id="battleArena" hidden>
+                <div class="versus">
+                    <div class="player">
+                        <div class="avatar-big">🙋</div>
+                        <b>Bạn</b>
+                        <span id="mySide">Đội ủng hộ</span>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="player">
+                        <div class="avatar-big">🧑‍🎓</div>
+                        <b id="opponentName">Đối thủ ngẫu nhiên</b>
+                        <span id="opSide">Đội phản đối</span>
+                    </div>
+                </div>
+                <div class="topic-box">
+                    <span class="reward-tag">CHỦ ĐỀ ĐỐI KHÁNG</span>
+                    <h3 id="battleTopic">Sinh viên có nên sử dụng AI trong học tập không?</h3>
+                    <p class="mut">Bạn được phân vai tự động. Hãy bảo vệ quan điểm bằng lập luận và ví dụ cụ thể.</p>
+                </div>
+                <div class="classroom">
+                    <div class="classroom-top">
+                        <span>SKILLUP · FIRST-PERSON CLASSROOM</span>
+                        <span>● LIVE PRACTICE</span>
+                    </div>
+                    <div class="screen-board">
+                        <small>MÀN CHIẾU LỚP HỌC</small>
+                        <b id="screenTopic">CHỦ ĐỀ TRANH BIỆN</b>
+                        <span>Trình bày rõ ràng · Lập luận thuyết phục · Tự tin</span>
+                    </div>
+                    <div class="lectern">
+                        🎤<small>BỤC THUYẾT TRÌNH</small>
+                    </div>
+                    <div class="audience">
+                        <span>👩🏻‍🎓</span>
+                        <span>👨🏽‍🎓</span>
+                        <span>👩🏾‍🎓</span>
+                        <span>🧑🏻‍🎓</span>
+                        <span>👨🏻‍🎓</span>
+                        <span>👩🏼‍🎓</span>
+                        <span>🧑🏽‍🎓</span>
+                    </div>
+                </div>
+                <div class="battle-controls">
+                    <div>
+                        <span class="mut">Giai đoạn</span>
+                        <b id="battlePhase">Chuẩn bị</b>
+                    </div>
+                    <div>
+                        <span class="mut">Thời gian còn lại</span>
+                        <b class="battle-clock" id="battleClock">01:00</b>
+                    </div>
+                    <button class="btn" id="battleStart">Bắt đầu chuẩn bị 60 giây</button>
+                </div>
+                <div id="battlePresentation" hidden>
+                    <p class="mut" style="margin:12px 0">Đến lượt bạn trình bày. Hãy đứng lên và nói thành tiếng như
+                        đang ở trước lớp. Hết giờ, tự đánh giá phần thể hiện của mình.</p>
+                    <button class="btn" id="finishSpeech">Tôi đã trình bày xong</button>
+                </div>
+                <div id="battleScoring" hidden>
+                    <h3 style="margin:18px 0 8px">📊 Tự đánh giá lượt trình bày</h3>
+                    <p class="mut">Chọn mức độ thể hiện ở từng tiêu chí. Điểm được quy đổi tự động, dùng để theo dõi
+                        tiến bộ cá nhân.</p>
+                    <div id="scoreSliders"></div>
+                    <button class="btn" id="submitBattleScore">Chốt điểm & nhận xu</button>
+                </div>
+                <div id="battleResult" class="card" hidden style="margin-top:14px"></div>
+            </div>
+        </section>
+        <section class="v" id="v-doi-qua">
+            <h2>🎁 SkillUp Rewards – Cửa hàng đổi quà</h2>
+            <p class="sub">Đổi xu tích lũy từ việc hoàn thành khóa học và luyện tập tình huống lấy những món quà nhỏ
+                dành cho sinh viên.</p>
+            <div class="reward-hero">
+                <div>
+                    <h2 style="color:white">Góc quà dành cho bạn</h2>
+                    <p style="opacity:.88;margin-top:5px">Học tập chăm chỉ – tích xu – đổi quà thật</p>
+                </div>
+                <div class="coin-pill">
+                    🪙 <span id="coinBalance">0</span> xu
+                </div>
+            </div>
+            <div class="chips" id="rewardFilters">
+                <button class="chip on" data-rf="all">Tất cả</button>
+                <button class="chip" data-rf="stationery">Văn phòng phẩm</button>
+                <button class="chip" data-rf="food">Đồ ăn & thức uống</button>
+                <button class="chip" data-rf="voucher">Mã ưu đãi</button>
+            </div>
+            <div class="grid" id="rewardGrid"></div>
+            <p class="reward-note" style="margin-top:14px">Lưu ý: Đây là cửa hàng minh họa cho dự án SkillUp. Mã đổi quà
+                và ưu đãi hiện là mã demo, chưa phải voucher thanh toán tại cửa hàng.</p>
+            <div class="card" style="margin-top:18px">
+                <h3>📦 Lịch sử đổi quà</h3>
+                <div id="redeemHistory" class="mut" style="margin-top:8px">Bạn chưa đổi quà nào.</div>
+            </div>
+        </section>
+        <section class='v' id='v-su-kien'>
+            <h2>📌 Tường dán lịch thuyết trình</h2>
+            <p class='sub' style='max-width:62ch'>Ghim lịch trình bày của nhóm bạn lên bảng để cả lớp cùng biết, chuẩn
+                bị câu hỏi phản biện và thả lửa cổ vũ!</p>
+            <div class='card'>
+                <div class='evf'>
+                    <input id='evw' maxlength='40' placeholder='Tên bạn / Tên nhóm (VD: Nhóm 1)'
+                        aria-label='Tên bạn hoặc tên nhóm'>
+                    <input id='evt' maxlength='80' placeholder='Chủ đề thuyết trình...'
+                        aria-label='Chủ đề thuyết trình'>
+                    <input id='evn' maxlength='140' placeholder='Ghi chú ngắn (VD: Có minigame cuối bài)'
+                        aria-label='Ghi chú ngắn'>
+                    <input id='evh' maxlength='60' placeholder='Thời gian & Phòng (VD: Thứ 5, 14:00 - Phòng A101)'
+                        aria-label='Thời gian và phòng'>
+                    <select id='evk' aria-label='Màu giấy'>
+                        <option value='y'>🟨 Giấy vàng neon</option>
+                        <option value='c'>🟦 Giấy xanh dương</option>
+                        <option value='p'>🌸 Giấy hồng</option>
+                        <option value='g'>🟩 Giấy xanh lá</option>
+                    </select>
+                    <button class='btn' id='evb'>📌 Dán lên tường</button>
+                </div>
+            </div>
+            <p class='mut' style='margin:14px 0 4px'>💡 Mẹo: Bấm nút 🔥 trên từng tờ giấy để cổ vũ cho nhóm sắp thuyết
+                trình!</p>
+            <p class='mut' id='evs' style='margin:0 0 14px'></p>
+            <div class='chips' id='evc'></div>
+            <div class='board'>
+                <div class='grid' id='evl'></div>
+            </div>
+        </section>
+        <section class="v" id="v-danh-gia">
+            <h2>Đánh giá kỹ năng</h2>
+            <p class="sub">Làm sau khi học xong một khóa để xem bạn đã tiến bộ thế nào. 5 câu, khoảng 1 phút.</p>
+            <div class="card" id="qz"></div>
+        </section>
+        <section class="v" id="v-ve-chung-toi">
+            <h2>Về chúng tôi</h2>
+            <p class="sub" style="max-width:60ch">SkillUp giúp sinh viên rèn kỹ năng thuyết trình ngay từ năm nhất: học
+                đúng điều cần, luyện tập ngay và có bạn đồng hành. Mọi bài học đều miễn phí.</p>
+            <div class="grid" style="margin-bottom:22px">
+                <div class="card ft">
+                    <b>🎯</b>
+                    <h3>Học đúng điều cần</h3>
+                    <p class="mut">Từ chuẩn bị nội dung, làm slide đến trình bày và trả lời câu hỏi.</p>
+                </div>
+                <div class="card ft">
+                    <b>🛠️</b>
+                    <h3>Thực hành ngay</h3>
+                    <p class="mut">Mỗi khóa có video ngắn và bộ bấm giờ để tập nói ngay sau khi xem.</p>
+                </div>
+                <div class="card ft">
+                    <b>🤗</b>
+                    <h3>Cùng nhau tiến bộ</h3>
+                    <p class="mut">Hỏi đáp trong cộng đồng, có AI gợi ý câu trả lời ngay.</p>
+                </div>
+            </div>
+            <h3>Câu hỏi thường gặp</h3>
+            <details>
+                <summary>Mình nên bắt đầu từ đâu?</summary>
+                <p>Bắt đầu với khóa “Vượt hồi hộp, tự tin trước đám đông” hoặc “Nền tảng thuyết trình cho sinh viên”.
+                    Bấm “Học ngay” là xem video luôn, không cần đăng ký.</p>
+            </details>
+            <details>
+                <summary>Tiến độ học của mình được lưu ở đâu?</summary>
+                <p>Ngay trên trình duyệt của bạn, nên lần sau mở lại vẫn còn.</p>
+            </details>
+            <details>
+                <summary>Bài đánh giá hoạt động thế nào?</summary>
+                <p>Sau khi xem hết video của một khóa, bài đánh giá sẽ mở để bạn nhìn lại mình đã tiến bộ ra sao. Đây là
+                    bản tự đánh giá nhanh, không phải kết luận cuối cùng.</p>
+            </details>
+            <div class="btns" style="margin-top:20px">
+                <a class="btn" href="#khoa-hoc" style="text-decoration:none">Bắt đầu học</a>
+            </div>
+        </section>
+    </main>
+    <footer>© 2026 SkillUp – Thuyết trình tự tin. Video thuộc về các kênh YouTube tương ứng.</footer>
+    <div id="t" role="status"></div>
+    <script>
+        const $ = s => document.querySelector(s)
+            , $$ = s => [...document.querySelectorAll(s)]
+            , R = document.documentElement;
+        const ls = {
+            g(k, d) {
+                try {
+                    const v = localStorage.getItem(k);
+                    return v == null ? d : JSON.parse(v)
+                } catch (e) {
+                    return d
+                }
+            },
+            s(k, v) {
+                try {
+                    localStorage.setItem(k, JSON.stringify(v))
+                } catch (e) { }
+            }
+        };
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;"
+        }[c]));
+        function toast(m) {
+            const t = $("#t");
+            t.textContent = m;
+            t.classList.add("on");
+            clearTimeout(toast.h);
+            toast.h = setTimeout(() => t.classList.remove("on"), 2400)
+        }
+        const V = ["trang-chu", "khoa-hoc", "hoc-tap", "ho-so", "cong-dong", "dau-truong", "doi-qua", "su-kien", "danh-gia", "ve-chung-toi"];
+        const CAT = {
+            all: "Tất cả",
+            cb: "Nội dung & cấu trúc",
+            sl: "Thiết kế slide",
+            gv: "Giọng nói & cơ thể",
+            ht: "Tự tin & vượt hồi hộp",
+            ph: "Hỏi đáp & tình huống",
+            en: "Tiếng Anh"
+        };
+        const C = [["Vượt qua tâm lý lo lắng khi thuyết trình", "ht", 0, 0, "🧘"], ["Mở đầu thu hút người nghe", "cb", 0, 0, "✨"], ["Làm chủ giọng nói", "gv", 0, 0, "🎙️"], ["Ngôn ngữ cơ thể tự tin", "gv", 0, 0, "🙋"], ["Kết thúc bài thuyết trình ấn tượng", "cb", 0, 0, "🏁"], ["Trả lời câu hỏi và phản biện", "ph", 0, 0, "💬"], ["Nền tảng thuyết trình cho sinh viên", "cb", 0, 0, "🎤"], ["Thiết kế slide PowerPoint", "sl", 0, 0, "🎞️"], ["Thuyết trình bằng tiếng Anh", "en", 0, 0, "🌏"]];
+        const VD = [[["1rFjRPx4rEk", "Bài học: bình tĩnh và vượt qua hồi hộp khi đứng trước đám đông"], ["Vd4BgiLWDfs", "Thực hành xây dựng sự tự tin trước khi nói"]], [["RoXZcHdxQuc", "5 cách mở đầu bài thuyết trình thu hút người nghe"], ["trXh5cugEyA", "Cách dẫn dắt từ mở bài vào nội dung chính"]], [["xPY9EHVp_1E", "Điều chỉnh âm lượng, tốc độ và ngữ điệu"], ["F7n9oXftiNI", "Luyện giọng nói rõ ràng, truyền cảm"]], [["BbidTLdXuxc", "3 cách sử dụng ngôn ngữ cơ thể tự nhiên"], ["TeWXTbm3MmE", "Tăng sự tự tin nhờ ngôn ngữ cơ thể"]], [["trXh5cugEyA", "Cách tổng kết và kết thúc bài thuyết trình"], ["-Btbsa9Rb2s", "Kinh nghiệm thuyết trình hiệu quả"]], [["GR5uYjF9dq4", "Cách xử lý câu hỏi khó khi thuyết trình"], ["KDObQjDTaQQ", "Trả lời phản biện bình tĩnh và thuyết phục"]], [["-Btbsa9Rb2s", "Kinh nghiệm thuyết trình hiệu quả"], ["KQ1pOJeWPWM", "7 bước biến thuyết trình thành điểm mạnh"]], [["okZnuwf4pyc", "Công cụ làm PowerPoint cho sinh viên"], ["a1AReuLFXdQ", "Làm slide thuyết trình đơn giản, đẹp"]], [["iDZtSGONrE4", "Thuyết trình tiếng Anh: mẫu câu từng phần"], ["4wiJpm43pGs", "Present with confidence"]]]
+
+        const THEORY = [{
+            title: "Vượt qua tâm lý lo lắng",
+            intro: "Cảm giác hồi hộp trước khi nói là phản ứng thường gặp. Mục tiêu không phải là hết run hoàn toàn mà là biết cách ổn định và tiếp tục trình bày.",
+            points: ["Chuẩn bị dàn ý theo từ khóa, không học thuộc từng câu.", "Tập nói thành tiếng nhiều lần và thử bấm giờ trước buổi trình bày.", "Trước khi bắt đầu, hít vào chậm, thở ra dài và đặt hai chân vững trên sàn.", "Nhìn lần lượt vào một vài vị trí thân thiện trong lớp; nếu quên ý, dừng một nhịp rồi nhìn lại từ khóa."],
+            practice: "Nói giới thiệu bản thân trong 45 giây. Tập trung vào nhịp thở, tốc độ vừa phải và câu mở đầu."
+        }, {
+            title: "Mở đầu thu hút người nghe",
+            intro: "Mở đầu giúp người nghe hiểu chủ đề và có lý do để chú ý. Một phần mở đầu tốt cần ngắn, rõ và liên quan trực tiếp đến nội dung.",
+            points: ["Bắt đầu bằng câu hỏi gợi suy nghĩ, một tình huống quen thuộc hoặc một con số có nguồn.", "Giới thiệu chủ đề và lý do chủ đề đáng quan tâm.", "Nêu mục tiêu hoặc 2–3 ý chính để người nghe biết bài nói sẽ đi đâu.", "Tránh mở đầu quá dài hoặc xin lỗi, tự hạ thấp bản thân."],
+            practice: "Tạo hai cách mở đầu khác nhau cho chủ đề “Sinh viên quản lý thời gian như thế nào?” rồi chọn cách tự nhiên nhất."
+        }, {
+            title: "Làm chủ giọng nói",
+            intro: "Giọng nói giúp truyền tải nội dung và cảm xúc. Nói rõ, đủ nghe và có nhịp điệu sẽ giúp người nghe theo dõi dễ hơn.",
+            points: ["Phát âm rõ, kết thúc từ trọn vẹn và tránh nói quá nhanh.", "Điều chỉnh âm lượng phù hợp với không gian; không cần cố hét.", "Nhấn giọng ở từ khóa và thay đổi ngữ điệu để tránh đều đều.", "Dùng khoảng dừng ngắn sau ý quan trọng thay vì lấp đầy bằng “ờ”, “ừm”."],
+            practice: "Đọc một đoạn khoảng 5 câu hai lần: lần đầu tự nhiên, lần hai chú ý ngắt nghỉ và nhấn từ khóa."
+        }, {
+            title: "Ngôn ngữ cơ thể",
+            intro: "Tư thế, ánh mắt và cử chỉ hỗ trợ thông điệp. Cử chỉ hiệu quả là tự nhiên, vừa đủ và thống nhất với điều đang nói.",
+            points: ["Đứng vững, vai thả lỏng, hướng người về phía người nghe.", "Phân bổ ánh mắt qua nhiều khu vực trong lớp, không nhìn cố định một chỗ.", "Dùng cử chỉ tay để minh họa ý, tránh lặp lại một động tác liên tục.", "Di chuyển có chủ đích; hạn chế đung đưa hoặc quay lưng quá lâu về phía người nghe."],
+            practice: "Quay video 1 phút giới thiệu một sở thích; xem lại tư thế, ánh mắt và cử chỉ của mình."
+        }, {
+            title: "Kết thúc bài thuyết trình",
+            intro: "Kết thúc giúp người nghe ghi nhớ thông điệp chính và biết bài nói đã hoàn tất. Phần kết nên ngắn gọn, không mở thêm luận điểm lớn.",
+            points: ["Nhắc lại thông điệp hoặc 2–3 ý quan trọng nhất.", "Đưa ra kết luận, đề xuất hoặc lời kêu gọi hành động phù hợp.", "Dùng một câu kết rõ ràng để chuyển sang phần hỏi đáp.", "Cảm ơn người nghe và giữ tư thế sẵn sàng tiếp nhận câu hỏi."],
+            practice: "Viết và nói phần kết 20–30 giây cho chủ đề bạn đang học."
+        }, {
+            title: "Trả lời câu hỏi và phản biện",
+            intro: "Khi nhận câu hỏi, hãy nghe hết ý, xác định đúng điều người hỏi muốn biết rồi trả lời trực tiếp và có căn cứ.",
+            points: ["Lắng nghe trọn câu hỏi; nếu chưa rõ, lịch sự đề nghị người hỏi nói rõ hơn.", "Có thể nhắc lại hoặc diễn đạt ngắn câu hỏi để xác nhận mình hiểu đúng.", "Trả lời trọng tâm trước, sau đó giải thích bằng lý do hoặc ví dụ.", "Nếu chưa biết, thành thật ghi nhận và nói rõ bạn sẽ kiểm tra thêm; không suy đoán như thể đó là sự thật.", "Giữ thái độ tôn trọng, tập trung phản hồi vào ý kiến chứ không công kích người hỏi."],
+            practice: "Tự trả lời câu hỏi: “Vì sao người nghe nên tin vào đề xuất của bạn?” trong tối đa 45 giây."
+        }];
+
+        const Q = ["Mình hiểu rõ những ý chính của khóa học này.", "Mình có thể hướng dẫn lại bạn bè cách làm.", "Mình đã thử áp dụng vào một bài thuyết trình hoặc buổi tập thật.", "Mình thấy tự tin hơn khi đứng trước người nghe.", "Mình biết cần luyện gì tiếp theo để thuyết trình tốt hơn."]
+            , LV = ["Chưa đúng lắm", "Một phần", "Khá đúng", "Rất đúng"];
+        let wd = ls.g("su-w", {})
+            , cur = null
+            , vi = 0
+            , keep = 0
+            , cat = "all"
+            , q = ""
+            , qi = 0
+            , ans = []
+            , qc = null
+            , sc = ls.g("su-sc", {})
+            , pf = ls.g("su-pf", {
+                n: "",
+                s: "",
+                d: "",
+                k: []
+            })
+            , T = 180
+            , D = 180
+            , tm = null;
+        let P = ls.g("su-p", [["Làm sao để bớt run khi thuyết trình trước cả lớp?", "Trần Thu Hà", "2 giờ trước", 128, 45, 0, "1) Tập nói to trước gương hoặc quay video ít nhất 3 lần trước buổi thuyết trình.\n2) Thuộc kỹ 30 giây mở đầu và hít thở chậm vài nhịp trước khi nói.\n3) Nhìn vào 1-2 bạn thân thiện trong lớp thay vì cả đám đông."], ["Review khóa “Thiết kế slide PowerPoint”: ngắn gọn, dễ áp dụng", "Nguyễn Minh Đức", "4 giờ trước", 215, 32, 0], ["Mẹo chia phần nói khi thuyết trình nhóm để không bị “ôm” hết", "Lê Gia Hân", "hôm qua", 96, 21, 0]]);
+
+        P.forEach(p => {
+            if (p[6] == "…")
+                p[6] = "!"
+        }
+        );
+        function route() {
+            const h = location.hash.slice(1)
+                , id = V.includes(h) ? h : V[0];
+            if (!keep)
+                cur = null;
+            keep = 0;
+            $$(".v").forEach(e => e.classList.toggle("on", e.id == "v-" + id));
+            $$("nav a").forEach(a => a.classList.toggle("on", a.hash == "#" + id));
+            ({
+                "khoa-hoc": renderCourses,
+                "hoc-tap": renderLearn,
+                "ho-so": renderProfile,
+                "cong-dong": renderPosts,
+                "dau-truong": renderBattle,
+                "doi-qua": renderRewards,
+                "su-kien": renderEv,
+                "danh-gia": renderQuiz
+            }[id] || (() => { }
+                ))();
+            scrollTo(0, 0)
+        }
+        function goCat(k) {
+            cat = k;
+            q = "";
+            $("#sq").value = "";
+            if (location.hash == "#khoa-hoc")
+                renderCourses();
+            else
+                location.hash = "khoa-hoc"
+        }
+
+        const pr = i => Math.round((wd[i] || []).length / VD[i].length * 100);
+        function renderCourses() {
+            $("#cl").style.display = cur == null ? "" : "none";
+            $("#cp").innerHTML = "";
+            if (cur != null)
+                return renderPlayer();
+            $("#chips").innerHTML = Object.entries(CAT).map(([k, v]) => `<button class="chip${k == cat ? " on" : ""}" data-k="${k}">${v}</button>`).join("");
+            const l = C.map((c, i) => [c, i]).filter(([c]) => (cat == "all" || c[1] == cat) && c[0].toLowerCase().includes(q));
+            $("#cg").innerHTML = l.length ? l.map(([c, i]) => {
+                const p = pr(i);
+                return `<div class="card cc"><div class="th">${c[4]}</div><h3>${c[0]}</h3><p class="mut"><span>▶ ${VD[i].length} video</span><span>🆓 Miễn phí</span>${p ? `<span>${p}%</span>` : ""}</p><button class="btn${p ? " o" : ""}" data-o="${i}">${p >= 100 ? "Xem lại" : p ? "Học tiếp" : "Học ngay"}</button></div>`
+            }
+            ).join("") : `<p class="sub">Không có khóa học nào khớp. Thử từ khóa khác hoặc chọn “Tất cả” nhé 🔍</p>`
+        }
+        function openCourse(i) {
+            cur = i;
+            const w = wd[i] || [];
+            vi = Math.max(0, VD[i].findIndex((_, k) => !w.includes(k)));
+            if (location.hash == "#khoa-hoc") {
+                renderCourses();
+                scrollTo(0, 0)
+            } else {
+                keep = 1;
+                location.hash = "khoa-hoc"
+            }
+        }
+        function renderPlayer() {
+            const c = C[cur]
+                , v = VD[cur]
+                , w = wd[cur] || []
+                , x = v[vi]
+                , p = pr(cur);
+            $("#cp").innerHTML = `<button class="chip" data-bk>← Tất cả khóa học</button><h2 style="margin:14px 0 6px">${c[4]} ${c[0]}</h2><div class="row"><div class="bar"><i style="width:${p}%"></i></div><span class="mut">${w.length}/${v.length} video · ${p}%</span></div>
+ <div class="theory"><h3>📘 Học lý thuyết trước khi xem video</h3><b>${THEORY[cur]?.title || c[0]}</b><p style="margin:6px 0">${THEORY[cur]?.intro || "Nắm các nguyên tắc cơ bản trước khi thực hành."}</p><ul>${(THEORY[cur]?.points || ["Quan sát video và ghi lại ý chính."]).map(t => `<li>${t}</li>`).join("")}</ul><p><b>📝 Bài tập áp dụng:</b> ${THEORY[cur]?.practice || "Thử áp dụng vào một bài nói ngắn."}</p></div>
+ <div class="pl"><div><div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${x[0]}" title="${esc(x[1])}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>
+ <h3 style="margin:12px 0 10px">${esc(x[1])}</h3><div class="btns"><button class="btn${w.includes(vi) ? " o" : ""}" data-w="${vi}">${w.includes(vi) ? "✓ Đã xem xong" : "Đánh dấu đã xem"}</button><a class="btn o" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/watch?v=${x[0]}">Mở trên YouTube ↗</a></div></div>
+ <div><h3 style="margin-bottom:10px">Danh sách bài học</h3>${v.map((y, k) => `<button class="ls${k == vi ? " on" : ""}" data-v="${k}"><span>${w.includes(k) ? "✅" : "▶️"}</span><span>${k + 1}. ${esc(y[1])}</span></button>`).join("")}${p >= 100 ? `<div class="card" style="margin-top:12px">🎉 Bạn đã học xong! <a href="#danh-gia" style="color:var(--g);font-weight:700">Làm bài đánh giá sau khóa học →</a></div>` : ""}</div></div>`
+        }
+
+        function renderLearn() {
+            const ids = Object.keys(wd).filter(i => wd[i].length)
+                , n = ids.length
+                , avg = n ? Math.round(ids.reduce((s, i) => s + pr(i), 0) / n) : 0
+                , done = ids.filter(i => pr(i) >= 100).length;
+            $("#dt").textContent = new Date().toLocaleDateString("vi-VN", {
+                weekday: "long",
+                day: "numeric",
+                month: "numeric",
+                year: "numeric"
+            });
+            $("#ring").style.setProperty("--p", avg);
+            $("#rv").textContent = avg + "%";
+            $("#ps").textContent = n ? `Hoàn thành ${done}/${n} khóa học đã bắt đầu` : "Bạn chưa bắt đầu khóa học nào.";
+            $("#my").innerHTML = n ? ids.map(i => `<div class="card row"><span class="ic">${C[i][4]}</span><div class="f"><b>${C[i][0]}</b><div class="bar"><i style="width:${pr(i)}%"></i></div></div><span class="mut">${pr(i)}%${pr(i) >= 100 ? " 🎉" : ""}</span><button class="btn o" data-o="${i}">${pr(i) >= 100 ? "Xem lại" : "Học tiếp"}</button></div>`).join("") : `<div class="card">Vào mục <a href="#khoa-hoc" style="color:var(--g);font-weight:600">Khóa học</a> và bấm “Học ngay”: miễn phí, không cần đăng ký!</div>`;
+            const g = ls.g("su-g", [0, 0, 0]);
+            $$(".goal input").forEach((x, k) => x.checked = !!g[k]);
+            $("#gs").textContent = g.filter(Boolean).length + "/3 mục tiêu đã hoàn thành"
+        }
+        const fmt = () => {
+            $("#tm").textContent = String(Math.floor(T / 60)).padStart(2, "0") + ":" + String(T % 60).padStart(2, "0")
+        }
+            ;
+        const stp = () => {
+            clearInterval(tm);
+            tm = null;
+            $("#tg").textContent = "Bắt đầu"
+        }
+            ;
+        $("#tg").onclick = () => {
+            if (tm) {
+                clearInterval(tm);
+                tm = null;
+                $("#tg").textContent = "Tiếp tục"
+            } else {
+                $("#tg").textContent = "Tạm dừng";
+                tm = setInterval(() => {
+                    T--;
+                    fmt();
+                    if (T <= 0) {
+                        stp();
+                        T = D;
+                        fmt();
+                        toast("Hết giờ! Bạn thấy nhịp nói của mình thế nào? 🎤")
+                    }
+                }
+                    , 1000)
+            }
+        }
+            ;
+        $("#tr").onclick = () => {
+            stp();
+            T = D;
+            fmt()
+        }
+            ;
+        $("#dur").onclick = e => {
+            const b = e.target.closest("[data-t]");
+            if (!b)
+                return;
+            D = +b.dataset.t;
+            T = D;
+            stp();
+            fmt();
+            $$("#dur .chip").forEach(x => x.classList.toggle("on", x == b))
+        }
+            ;
+        document.addEventListener("change", e => {
+            if (e.target.matches(".goal input")) {
+                ls.s("su-g", $$(".goal input").map(x => +x.checked));
+                renderLearn()
+            }
+        }
+        );
+
+        const isQ = v => /\?|làm sao|làm thế nào|như thế nào|thế nào|tại sao|vì sao|có nên|ở đâu|là gì|bằng cách nào|giúp mình|giúp em/i.test(v);
+        function renderPosts() {
+            renderSituationVideos();
+            renderScenarios();
+            $("#pl").innerHTML = P.map((p, i) => `<div class="card post"><span class="av">${esc(p[1][0])}</span><div class="f"><b>${esc(p[0])}</b><p class="mut">${esc(p[1])}, ${p[2]}</p></div><button class="lk" data-l="${i}" aria-pressed="${!!p[5]}">${p[5] ? "❤️" : "🤍"} ${p[3] + p[5]}</button><span class="mut">💬 ${p[4]}</span>${p[6] ? `<div class="ai"><b>🤖 AI gợi ý trả lời</b>\n${p[6] == "…" ? "Đang suy nghĩ…" : p[6] == "!" ? `Chưa lấy được gợi ý. <button class="lk" data-ai="${i}">Thử lại</button>` : esc(p[6])}</div>` : ""}</div>`).join("")
+        }
+        async function ask(i) {
+            const p = P[i];
+            p[6] = "…";
+            renderPosts();
+            try {
+                const sm = await claude.use("sample");
+                if (!sm)
+                    throw 0;
+                const r = await sm(`Bạn là trợ lý AI của SkillUp, cộng đồng học kỹ năng thuyết trình cho sinh viên Việt Nam. Hãy gợi ý câu trả lời bằng tiếng Việt cho câu hỏi bên dưới: thân thiện, thực tế, 2-3 ý ngắn đánh số, tối đa 80 từ, không chào hỏi dài dòng.\nCâu hỏi của sinh viên: ${p[0]}`, {
+                    modelTier: "quick",
+                    cache: false
+                });
+                p[6] = (r.text || "").trim() || "!"
+            } catch (e) {
+                p[6] = "!"
+            }
+            ls.s("su-p", P);
+            renderPosts()
+        }
+        $("#pb").onclick = () => {
+            const v = $("#pt").value.trim();
+            if (!v)
+                return toast("Hãy nhập nội dung bài viết nhé ✍️");
+            P.unshift([v, pf.n || "Bạn", "vừa xong", 0, 0, 0]);
+            ls.s("su-p", P);
+            $("#pt").value = "";
+            renderPosts();
+            toast("Đã đăng bài viết!");
+            if (isQ(v))
+                ask(0)
+        }
+            ;
+        $("#pt").onkeydown = e => {
+            if (e.key == "Enter")
+                $("#pb").click()
+        }
+            ;
+
+        function renderQuiz() {
+            const b = $("#qz");
+            if (qc == null) {
+                const dn = C.filter((_, i) => pr(i) >= 100).length;
+                b.innerHTML = `<h3 style="margin-bottom:6px">Bạn vừa học xong khóa nào?</h3><p class="mut" style="margin-bottom:12px">${dn ? "Chọn khóa đã hoàn thành để đánh giá." : "Học hết video của một khóa và bấm “Đánh dấu đã xem” để mở bài đánh giá."}</p><div class="chips">${C.map((c, i) => {
+                    const ok = pr(i) >= 100;
+                    return `<button class="chip" data-q="${i}"${ok ? "" : " disabled"}>${ok ? (sc[i] ? "🏅" : "✅") : "🔒"} ${c[0]}${sc[i] ? ` · ${sc[i].s}%` : ""}</button>`
+                }
+                ).join("")}</div>${dn ? "" : `<div class="btns" style="margin-top:12px"><a class="btn" href="#khoa-hoc" style="text-decoration:none">Đến khóa học</a></div>`}`;
+                return
+            }
+            if (qi < Q.length) {
+                b.innerHTML = `<p class="mut">${C[qc][0]} · Câu ${qi + 1}/${Q.length}</p><div class="bar"><i style="width:${qi / Q.length * 100}%"></i></div><h3 style="margin:12px 0 16px">${Q[qi]}</h3><div class="chips">${LV.map((t, k) => `<button class="chip" data-a="${k + 1}">${t}</button>`).join("")}</div>`;
+                return
+            }
+            const r = sc[qc]
+                , s = r.s
+                , m = s >= 85 ? "Tuyệt vời! Bạn đã nắm vững khóa học này 🌟" : s >= 60 ? "Rất tốt! Bạn đã tiếp thu phần lớn nội dung 👏" : "Bạn đã bắt đầu đúng hướng! Xem lại video để chắc hơn 🌱";
+            b.innerHTML = `<h3 style="margin-bottom:12px">Kết quả sau khóa học 🎯</h3><div class="row"><div class="ring" style="--p:${s}"><b>${s}%</b></div><div class="f"><b>${C[qc][0]}</b><p class="mut" style="margin-top:6px">${m}</p>${r.p != null ? `<p class="mut">Lần trước: ${r.p}%${s > r.p ? " → bạn đã tiến bộ 📈" : ""}</p>` : ""}</div></div><div class="btns" style="margin-top:16px"><button class="btn" data-qa>Đánh giá khóa khác</button><button class="btn o" data-o="${qc}">Xem lại khóa học</button></div>`
+        }
+
+        const rd = () => {
+            pf.n = $("#pf-n").value.trim();
+            pf.s = $("#pf-s").value.trim();
+            pf.d = $("#pf-d").value.trim()
+        }
+            ;
+        function renderProfile() {
+            $("#pf-n").value = pf.n || "";
+            $("#pf-s").value = pf.s || "";
+            $("#pf-d").value = pf.d || "";
+            $("#pf-k").innerHTML = Object.entries(CAT).filter(([k]) => k != "all").map(([k, v]) => `<button class="chip${pf.k.includes(k) ? " on" : ""}" data-pk="${k}" aria-pressed="${pf.k.includes(k)}">${v}</button>`).join("");
+            const r = pf.k.map(k => C.findIndex(c => c[1] == k)).filter(i => i >= 0);
+            $("#pf-r").innerHTML = r.length ? `<h3 style="margin:20px 0 10px">Khóa học gợi ý cho mong muốn của bạn</h3>${r.map(i => `<div class="card row"><span class="ic">${C[i][4]}</span><b class="f">${C[i][0]}</b><button class="btn o" data-o="${i}">Học ngay</button></div>`).join("")}` : ""
+        }
+        $("#pf-b").onclick = () => {
+            rd();
+            ls.s("su-pf", pf);
+            renderProfile();
+            toast(pf.n ? `Đã lưu hồ sơ. Chào ${pf.n}! 🌿` : "Đã lưu hồ sơ!")
+        }
+            ;
+
+        document.addEventListener("click", e => {
+            const b = e.target.closest("[data-k],[data-o],[data-bk],[data-w],[data-v],[data-l],[data-ai],[data-a],[data-q],[data-qa],[data-pk],[data-rs]");
+            if (!b)
+                return;
+            const d = b.dataset;
+            if (d.k != null)
+                goCat(d.k);
+            else if (d.o != null)
+                openCourse(+d.o);
+            else if (d.bk != null) {
+                cur = null;
+                renderCourses();
+                scrollTo(0, 0)
+            } else if (d.v != null) {
+                vi = +d.v;
+                renderPlayer()
+            } else if (d.w != null) {
+                const w = wd[cur] = wd[cur] || []
+                    , k = +d.w
+                    , j = w.indexOf(k);
+                j < 0 ? w.push(k) : w.splice(j, 1);
+                ls.s("su-w", wd);
+                if (j < 0) {
+                    if (pr(cur) >= 100) {
+                        toast("Chúc mừng! Bạn đã học xong khóa này 🎉");
+                        if (!coinCourses.includes(cur)) {
+                            coinCourses.push(cur);
+                            ls.s('su-coin-courses', coinCourses);
+                            awardCoins(20, 'Hoàn thành khóa học! +20 xu')
+                        }
+                    } else if (k < VD[cur].length - 1)
+                        vi = k + 1
+                }
+                renderPlayer()
+            } else if (d.l != null) {
+                P[d.l][5] ^= 1;
+                ls.s("su-p", P);
+                renderPosts()
+            } else if (d.ai != null)
+                ask(+d.ai);
+            else if (d.a != null) {
+                ans.push(+d.a);
+                qi++;
+                if (qi == Q.length) {
+                    const t = ans.reduce((x, y) => x + y, 0);
+                    sc[qc] = {
+                        s: Math.round((t - 5) / 15 * 100),
+                        p: (sc[qc] || {}).s
+                    };
+                    ls.s("su-sc", sc)
+                }
+                renderQuiz()
+            } else if (d.q != null) {
+                qc = +d.q;
+                qi = 0;
+                ans = [];
+                renderQuiz()
+            } else if (d.qa != null) {
+                qc = null;
+                qi = 0;
+                ans = [];
+                renderQuiz()
+            } else if (d.pk != null) {
+                rd();
+                pf.k = pf.k.includes(d.pk) ? pf.k.filter(x => x != d.pk) : [...pf.k, d.pk];
+                ls.s("su-pf", pf);
+                renderProfile()
+            } else if (d.rs != null) {
+                wd = {};
+                ls.s("su-w", wd);
+                renderLearn()
+            }
+        }
+        );
+
+        // Six videos supplied for the Q&A and real-life situation practice area.
+        const SITUATION_VIDEOS = [['jxTaydBnwIg', 'Video thực hành 1', 'Quan sát cách người nói mở đầu và dẫn dắt nội dung.'], ['hgL_U6KiOgM', 'Video thực hành 2', 'Chú ý cách diễn đạt ý chính và kết nối luận điểm.'], ['KA3lyGIJvdo', 'Video thực hành 3', 'Quan sát giọng nói, nhịp độ và ngôn ngữ cơ thể.'], ['XD2PEhn1FXM', 'Video thực hành 4', 'Tham khảo cách tương tác với người nghe.'], ['90M3wyQgm9o', 'Video thực hành 5', 'Chú ý cách xử lý câu hỏi và phản hồi.'], ['4YDIqSDTQRk', 'Video thực hành 6', 'Rút ra một kỹ thuật bạn có thể áp dụng ngay.']];
+        const SCENARIOS = [['Bạn quên mất ý đang trình bày', 'Bạn đang đứng trước lớp và bất chợt quên mất ý tiếp theo. Bạn sẽ làm gì?', 'Tạm dừng một nhịp, nhìn vào từ khóa trên slide hoặc ghi chú, sau đó nối lại bằng câu chuyển ý như: “Tiếp theo, chúng ta cùng nhìn vào…”'], ['Khán giả đặt câu hỏi khó', 'Một bạn hỏi điều bạn chưa chuẩn bị. Bạn sẽ phản hồi thế nào?', 'Bình tĩnh ghi nhận câu hỏi, xác nhận lại điều bạn hiểu. Nếu chưa có dữ liệu, hãy thành thật: “Đây là góc nhìn rất hay, mình xin kiểm tra thêm để phản hồi chính xác.”'], ['Máy chiếu gặp sự cố', 'Slide không hiển thị trong lúc bạn đang thuyết trình. Bạn xử lý ra sao?', 'Không dừng bài quá lâu. Chuyển sang trình bày bằng lời, mô tả ý chính hoặc ví dụ minh họa; nhờ người hỗ trợ kiểm tra thiết bị.'], ['Người nghe mất tập trung', 'Bạn nhận thấy lớp bắt đầu nói chuyện riêng. Bạn sẽ làm gì để kéo sự chú ý?', 'Đặt một câu hỏi ngắn, đưa ví dụ gần gũi hoặc mời người nghe chọn giữa hai phương án. Tránh trách móc khán giả.'], ['Bị phản biện quan điểm', 'Một người nghe không đồng ý và đưa ra lập luận trái chiều. Bạn phản hồi thế nào?', 'Cảm ơn ý kiến, nhắc lại điểm khác biệt một cách trung lập, sau đó dùng dẫn chứng để giải thích. Tập trung vào vấn đề, không công kích cá nhân.'], ['Vượt quá thời gian', 'Bạn còn nhiều nội dung nhưng chỉ còn 30 giây. Bạn sẽ kết thúc thế nào?', 'Ưu tiên nhắc lại thông điệp quan trọng nhất, bỏ bớt ví dụ phụ và kết thúc bằng một câu chốt rõ ràng.']];
+        const REWARDS = [{
+            id: 'pen',
+            name: 'Bộ bút highlight pastel',
+            cat: 'stationery',
+            price: 80,
+            img: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=85',
+            desc: 'Bộ bút màu dùng ghi chú và đánh dấu bài học.'
+        }, {
+            id: 'notebook',
+            name: 'Sổ tay ghi chú',
+            cat: 'stationery',
+            price: 100,
+            img: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=900&q=85',
+            desc: 'Sổ giấy để lên ý tưởng và chuẩn bị bài thuyết trình.'
+        }, {
+            id: 'coffee',
+            name: 'Phiếu đồ uống 20.000đ',
+            cat: 'food',
+            price: 120,
+            img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=85',
+            desc: 'Mã ưu đãi demo cho một món đồ uống.'
+        }, {
+            id: 'snack',
+            name: 'Combo bánh & đồ ăn nhẹ',
+            cat: 'food',
+            price: 140,
+            img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=85',
+            desc: 'Một phần ăn nhẹ cho giờ giải lao.'
+        }, {
+            id: 'foodcode',
+            name: 'Mã giảm 15% đồ ăn',
+            cat: 'voucher',
+            price: 160,
+            img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=85',
+            desc: 'Mã ưu đãi minh họa dành cho đơn đồ ăn.'
+        }, {
+            id: 'stationcode',
+            name: 'Voucher 20.000đ nhà sách',
+            cat: 'voucher',
+            price: 180,
+            img: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=900&q=85',
+            desc: 'Mã ưu đãi demo cho văn phòng phẩm và sách.'
+        }];
+        let coins = ls.g('su-coins', 0)
+            , completedScenarios = ls.g('su-scenarios', [])
+            , redeemed = ls.g('su-redeemed', [])
+            , coinCourses = ls.g('su-coin-courses', [])
+            , rewardFilter = 'all';
+        function renderSituationVideos() {
+            const el = document.getElementById('situVideoGrid');
+            if (!el)
+                return;
+            el.innerHTML = SITUATION_VIDEOS.map(v => `<div class="card video-card"><div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${v[0]}" title="${esc(v[1])}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><h3>${v[1]}</h3><p class="mut">${v[2]}</p><a class="btn o" style="display:inline-block;text-decoration:none;margin:8px 2px 2px" target="_blank" rel="noopener noreferrer" href="https://youtu.be/${v[0]}">Mở video ↗</a></div>`).join('')
+        }
+        function renderScenarios() {
+            const el = document.getElementById('scenarioGrid');
+            if (!el)
+                return;
+            el.innerHTML = SCENARIOS.map((v, i) => `<div class="scenario" id="scenario-${i}"><span class="reward-tag">TÌNH HUỐNG ${i + 1}</span><h3>${v[0]}</h3><p class="mut">${v[1]}</p><button class="chip" data-sctip="${i}">Xem gợi ý xử lý</button> <button class="btn" data-scdone="${i}" ${completedScenarios.includes(i) ? 'disabled' : ''}>${completedScenarios.includes(i) ? '✓ Đã nhận 10 xu' : 'Hoàn thành +10 xu'}</button><div class="tip">💡 <b>Gợi ý:</b> ${v[2]}</div></div>`).join('')
+        }
+        function renderRewards() {
+            const bal = document.getElementById('coinBalance');
+            if (!bal)
+                return;
+            bal.textContent = coins;
+            document.getElementById('rewardGrid').innerHTML = REWARDS.filter(x => rewardFilter === 'all' || x.cat === rewardFilter).map(x => `<div class="card reward-card"><img src="${x.img}" alt="${esc(x.name)}" loading="lazy"><div class="reward-body"><span class="reward-tag">${x.cat === 'stationery' ? 'VĂN PHÒNG PHẨM' : x.cat === 'food' ? 'ĐỒ ĂN & THỨC UỐNG' : 'MÃ ƯU ĐÃI'}</span><h3>${x.name}</h3><p class="mut">${x.desc}</p><div class="reward-price">🪙 ${x.price} xu</div><button class="btn" data-redeem="${x.id}" ${coins < x.price ? 'disabled' : ''}>${coins < x.price ? 'Chưa đủ xu' : 'Đổi quà'}</button></div></div>`).join('');
+            document.getElementById('redeemHistory').innerHTML = redeemed.length ? redeemed.slice().reverse().map(r => `<p>🎁 ${esc(r.name)} – ${r.price} xu <span class="mut">(${r.date})</span><br><b>Mã demo: ${esc(r.code)}</b></p>`).join('<hr style="border:0;border-top:1px solid var(--line);margin:8px 0">') : 'Bạn chưa đổi quà nào.';
+            document.querySelectorAll('[data-rf]').forEach(b => b.classList.toggle('on', b.dataset.rf === rewardFilter))
+        }
+        function awardCoins(n, msg) {
+            coins += n;
+            ls.s('su-coins', coins);
+            renderRewards();
+            toast(msg + ' · Ví xu: ' + coins + ' xu 🪙')
+        }
+        document.addEventListener('click', e => {
+            const b = e.target.closest('[data-sctip],[data-scdone],[data-redeem],[data-rf]');
+            if (!b)
+                return;
+            const d = b.dataset;
+            if (d.sctip != null) {
+                document.getElementById('scenario-' + d.sctip).classList.toggle('open');
+                return
+            }
+            if (d.scdone != null) {
+                const i = +d.scdone;
+                if (!completedScenarios.includes(i)) {
+                    completedScenarios.push(i);
+                    ls.s('su-scenarios', completedScenarios);
+                    awardCoins(10, 'Hoàn thành tình huống! +10 xu')
+                }
+                renderScenarios();
+                return
+            }
+            if (d.rf != null) {
+                rewardFilter = d.rf;
+                renderRewards();
+                return
+            }
+            if (d.redeem) {
+                const r = REWARDS.find(x => x.id === d.redeem);
+                if (!r || coins < r.price)
+                    return toast('Bạn chưa đủ xu để đổi món quà này.');
+                coins -= r.price;
+                const code = 'SKILLUP-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+                redeemed.push({
+                    name: r.name,
+                    price: r.price,
+                    code,
+                    date: new Date().toLocaleDateString('vi-VN')
+                });
+                ls.s('su-coins', coins);
+                ls.s('su-redeemed', redeemed);
+                renderRewards();
+                toast('Đổi quà thành công! Mã demo: ' + code)
+            }
+        }
+        );
+        renderSituationVideos();
+        renderScenarios();
+
+        const EVS = [{
+            id: 1,
+            who: 'Nhóm 1 • Tiên phong',
+            topic: 'Tác Động Của AI Đến Giới Trẻ',
+            note: 'Gồm 3 phần: Thực trạng dùng AI, cơ hội nghề nghiệp và cách ứng dụng thông minh trong học tập.',
+            when: 'Thứ 4, 08:30',
+            room: 'Phòng B204',
+            c: 'y',
+            n: 12,
+            d: 0
+        }, {
+            id: 2,
+            who: 'Trần Bảo Ngọc',
+            topic: 'Nghệ Thuật Quản Lý Thời Gian',
+            note: 'Chia sẻ phương pháp Pomodoro và cách cân bằng giữa việc học trên lớp với hoạt động CLB.',
+            when: 'Thứ 6, 10:15',
+            room: 'Hội trường A',
+            c: 'c',
+            n: 19,
+            d: 0
+        }, {
+            id: 3,
+            who: 'Nhóm 4 • Sáng tạo',
+            topic: 'Năng Lượng Xanh Trong Tương Lai',
+            note: 'Có phần minigame đố vui có thưởng ở cuối bài, các bạn nhớ chuẩn bị sẵn điện thoại nhé!',
+            when: 'Thứ 2 tuần sau',
+            room: 'Phòng B204',
+            c: 'p',
+            n: 24,
+            d: 0
+        }, {
+            id: 4,
+            who: 'Lê Hoàng Minh',
+            topic: 'Kỹ Năng Làm Việc Nhóm Hiệu Quả',
+            note: 'Bài mở màn tuần trước. Cảm ơn cả lớp đã đặt nhiều câu hỏi phản biện cực hay!',
+            score: '9.5',
+            c: 'g',
+            n: 31,
+            d: 1
+        }];
+        let ev = ls.g('su-ev', null) || EVS
+            , sv = []
+            , ef = 'all'
+            , md = 'load'
+            , sdb = null
+            , uid = null
+            , isO = false
+            , canW = null
+            , cc = {}
+            , mc = {};
+        const SH = () => md == 'shared'
+            , COL = ['y', 'c', 'p', 'g'];
+        const WID = () => uid || ls.g('su-u', null) || (() => {
+            const v = 'l' + Math.random().toString(36).slice(2, 10);
+            ls.s('su-u', v);
+            return v
+        }
+        )();
+        const fail = e => {
+            if (e && e.code == 'invalid_argument') {
+                canW = false;
+                toast('Bạn chỉ có quyền xem tường. Hãy nhờ chủ trang cấp quyền đóng góp nhé.')
+            } else
+                toast('Chưa gửi được, bạn thử lại sau nhé');
+            renderEv()
+        }
+            ;
+        function evCard(x) {
+            const sh = SH()
+                , tot = (+x.n || 0) + (sh ? cc[x.id] || 0 : 0)
+                , mine = !sh || isO || x.uid == WID()
+                , on = sh && mc[x.id]
+                , id = esc(x.id);
+            return `<div class='nt ${x.d ? 'done' : 'c-' + (COL.includes(x.c) ? x.c : 'y')}'><div class='nh'>${esc(x.who)}${x.d ? ' • Đã xong' : ''}</div><h3>${esc(x.topic)}</h3><p>${esc(x.note || '')}</p><div class='ni'><span>⏰ ${x.d ? 'Đã trình bày' : esc(x.when)}</span><span>${x.d ? '⭐ ' + (x.score ? esc(x.score) + ' điểm' : 'Chưa có điểm') : x.room ? '🏫 ' + esc(x.room) : ''}</span></div><div class='nf'><button class='hb${on ? ' on' : ''}' data-ec='${id}' aria-pressed='${!!on}'>🔥 Hóng bài: ${tot}</button>${mine ? `<span><button data-ed='${id}' aria-label='${x.d ? 'Đưa về sắp diễn ra' : 'Đánh dấu đã trình bày'}'>${x.d ? '🔄' : '✅'}</button><button data-ex='${id}' aria-label='Xóa tờ giấy'>🗑️</button></span>` : ''}</div></div>`
+        }
+        function renderEv() {
+            const A = md == 'load' ? [] : SH() ? sv : ev
+                , n = A.length
+                , u = A.filter(x => !x.d).length
+                , L = A.filter(x => ef == 'all' || (ef == 'up' ? !x.d : x.d))
+                , ro = SH() && canW === false;
+            if (!$('#evw').value && pf.n)
+                $('#evw').value = pf.n;
+            $$('#v-su-kien .evf input,#v-su-kien .evf select,#evb').forEach(i => i.disabled = ro);
+            $('#evs').textContent = md == 'load' ? '⏳ Đang kết nối tường chung của lớp…' : SH() ? (ro ? '🌐 Tường chung của lớp. Bạn đang ở chế độ chỉ xem, cần quyền đóng góp để dán và cổ vũ.' : '🌐 Tường chung: mọi người cùng thấy và cổ vũ cho nhau.') : '📴 Tường riêng trên thiết bị này (chưa kết nối được tường chung).';
+            $('#evc').innerHTML = [['all', 'Tất cả (' + n + ')'], ['up', 'Sắp diễn ra (' + u + ')'], ['done', 'Đã hoàn thành (' + (n - u) + ')']].map(([k, t]) => `<button class='chip${k == ef ? ' on' : ''}' data-ef='${k}'>${t}</button>`).join('');
+            $('#evl').innerHTML = md == 'load' ? '' : L.length ? L.map(evCard).join('') : `<p class='sub' style='grid-column:1/-1'>Chưa có tờ giấy nào ở mục này. Hãy dán lịch của nhóm bạn lên tường nhé 📌</p>`
+        }
+        (async () => {
+            try {
+                const db = await claude.use('db');
+                if (!db) {
+                    md = 'local';
+                    return renderEv()
+                }
+                const us = await claude.use('user');
+                if (us) {
+                    uid = await us.id();
+                    isO = await us.isOwner();
+                    canW = await us.can('data.write')
+                }
+                sdb = db;
+                const t1 = setTimeout(() => {
+                    if (md == 'load') {
+                        md = 'local';
+                        renderEv()
+                    }
+                }
+                    , 10000)
+                    , bad = () => {
+                        clearTimeout(t1);
+                        if (md == 'load')
+                            md = 'local';
+                        renderEv()
+                    }
+                    ;
+                db.collection('wall').orderBy('t', 'desc').onSnapshot(q => {
+                    if (q.metadata.fromCache && q.empty)
+                        return;
+                    clearTimeout(t1);
+                    md = 'shared';
+                    sv = q.docs.map(d => ({
+                        id: d.id,
+                        ...d.data()
+                    }));
+                    renderEv()
+                }
+                    , bad);
+                db.collection('cheers').onSnapshot(q => {
+                    cc = {};
+                    mc = {};
+                    q.docs.forEach(d => {
+                        const v = d.data();
+                        cc[v.e] = (cc[v.e] || 0) + 1;
+                        if (v.u == WID())
+                            mc[v.e] = 1
+                    }
+                    );
+                    renderEv()
+                }
+                    , () => { }
+                );
+            } catch (e) {
+                md = 'local';
+                renderEv()
+            }
+        }
+        )();
+        $('#evb').onclick = async () => {
+            const g = i => $(i).value.trim()
+                , who = g('#evw')
+                , topic = g('#evt');
+            if (!who || !topic)
+                return toast('Hãy nhập tên nhóm và chủ đề nhé ✍️');
+            const w = g('#evh').split(/\s+[-–—|]\s+/)
+                , o = {
+                    who,
+                    topic,
+                    note: g('#evn'),
+                    when: w[0] || 'Chưa chốt giờ',
+                    room: w.slice(1).join(' - '),
+                    c: $('#evk').value,
+                    n: 0,
+                    d: 0
+                };
+            try {
+                if (SH())
+                    await sdb.collection('wall').add({
+                        ...o,
+                        uid: WID(),
+                        t: Date.now()
+                    });
+                else {
+                    ev.unshift({
+                        id: Date.now(),
+                        ...o
+                    });
+                    ls.s('su-ev', ev)
+                }
+            } catch (e) {
+                return fail(e)
+            }
+            ['#evt', '#evn', '#evh'].forEach(i => $(i).value = '');
+            ef = 'all';
+            renderEv();
+            toast('Đã dán lên tường! 📌')
+        }
+            ;
+        document.addEventListener('click', async e => {
+            const b = e.target.closest('[data-ef],[data-ec],[data-ed],[data-ex]');
+            if (!b)
+                return;
+            const d = b.dataset;
+            if (d.ef != null) {
+                ef = d.ef;
+                return renderEv()
+            }
+            const id = d.ec || d.ed || d.ex
+                , sh = SH()
+                , x = (sh ? sv : ev).find(i => i.id == id);
+            if (!x)
+                return;
+            try {
+                if (d.ec != null) {
+                    if (sh) {
+                        const r = sdb.doc('cheers/' + x.id + '_' + WID());
+                        mc[x.id] ? await r.delete() : await r.set({
+                            e: x.id,
+                            u: WID()
+                        })
+                    } else {
+                        x.n++;
+                        ls.s('su-ev', ev)
+                    }
+                } else if (d.ed != null) {
+                    const nd = x.d ? 0 : 1;
+                    if (sh)
+                        await sdb.doc('wall/' + x.id).update({
+                            d: nd
+                        });
+                    else {
+                        x.d = nd;
+                        ls.s('su-ev', ev)
+                    }
+                    toast(nd ? 'Chúc mừng nhóm đã trình bày xong! 🎉' : 'Đã đưa về lịch sắp diễn ra')
+                } else {
+                    if (sh)
+                        await sdb.doc('wall/' + x.id).delete();
+                    else {
+                        ev = ev.filter(i => i != x);
+                        ls.s('su-ev', ev)
+                    }
+                    toast('Đã gỡ tờ giấy khỏi tường 🗑️')
+                }
+            } catch (err) {
+                return fail(err)
+            }
+            renderEv()
+        }
+        );
+        const t0 = ls.g("su-t", null);
+        if (t0)
+            R.dataset.theme = t0;
+        $("#th").onclick = () => {
+            const d = R.dataset.theme ? R.dataset.theme == "dark" : matchMedia("(prefers-color-scheme: dark)").matches
+                , n = d ? "light" : "dark";
+            R.dataset.theme = n;
+            ls.s("su-t", n)
+        }
+            ;
+        $("#sq").oninput = e => {
+            q = e.target.value.trim().toLowerCase();
+            renderCourses()
+        }
+            ;
+
+        // SkillUp Battle: local playable prototype. Online matchmaking requires a backend.
+        const B_TOPICS = ["Sinh viên có nên sử dụng AI trong học tập không?", "Có nên bắt buộc sinh viên tham gia hoạt động ngoại khóa?", "Làm việc nhóm hiệu quả hơn làm việc cá nhân?", "Điểm số có phản ánh đúng năng lực của sinh viên?", "Nên đi làm thêm khi còn đang học đại học?", "Học trực tuyến có thể thay thế hoàn toàn học trực tiếp?", "Mạng xã hội mang lại nhiều lợi ích hơn tác hại cho giới trẻ?", "Sinh viên nên ưu tiên kinh nghiệm hay điểm số?"];
+        const B_NAMES = ["Minh Anh", "Gia Huy", "Khánh Linh", "Hoàng Nam", "Bảo Trân", "Tuấn Kiệt", "Thảo Vy"];
+        let battleTimer = null
+            , battleRemaining = 60
+            , battleStage = 'idle'
+            , battleCount = ls.g('su-b-count', 0)
+            , battleBest = ls.g('su-b-best', 0)
+            , battleEarned = ls.g('su-b-coins', 0)
+            , battleTopicNow = ''
+            , battleMySide = 'Đội ủng hộ';
+        function renderBattle() {
+            document.getElementById('battleWins').textContent = battleCount;
+            document.getElementById('battleBest').textContent = battleBest || '—';
+            document.getElementById('battleCoins').textContent = battleEarned;
+        }
+        function stopBattleTimer() {
+            if (battleTimer) {
+                clearInterval(battleTimer);
+                battleTimer = null
+            }
+        }
+        function showBattleTime() {
+            document.getElementById('battleClock').textContent = String(Math.floor(battleRemaining / 60)).padStart(2, '0') + ':' + String(battleRemaining % 60).padStart(2, '0')
+        }
+        function beginBattle() {
+            stopBattleTimer();
+            battleStage = 'ready';
+            battleRemaining = 60;
+            battleTopicNow = B_TOPICS[Math.floor(Math.random() * B_TOPICS.length)];
+            battleMySide = Math.random() < .5 ? 'Đội ủng hộ' : 'Đội phản đối';
+            const arena = document.getElementById('battleArena');
+            arena.hidden = false;
+            document.getElementById('matchStatus').textContent = 'Đã ghép cặp thành công! Đối thủ đang sẵn sàng.';
+            document.getElementById('opponentName').textContent = B_NAMES[Math.floor(Math.random() * B_NAMES.length)];
+            document.getElementById('mySide').textContent = battleMySide;
+            document.getElementById('opSide').textContent = battleMySide === 'Đội ủng hộ' ? 'Đội phản đối' : 'Đội ủng hộ';
+            document.getElementById('battleTopic').textContent = battleTopicNow;
+            document.getElementById('screenTopic').textContent = battleTopicNow;
+            document.getElementById('battlePhase').textContent = 'Chuẩn bị';
+            document.getElementById('battleStart').textContent = 'Bắt đầu chuẩn bị 60 giây';
+            document.getElementById('battleStart').disabled = false;
+            document.getElementById('battlePresentation').hidden = true;
+            document.getElementById('battleScoring').hidden = true;
+            document.getElementById('battleResult').hidden = true;
+            showBattleTime();
+            arena.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        function runBattleClock(seconds, next) {
+            stopBattleTimer();
+            battleRemaining = seconds;
+            showBattleTime();
+            battleTimer = setInterval(() => {
+                battleRemaining--;
+                showBattleTime();
+                if (battleRemaining <= 0) {
+                    stopBattleTimer();
+                    next()
+                }
+            }
+                , 1000)
+        }
+        function startBattlePrep() {
+            if (battleStage !== 'ready')
+                return;
+            battleStage = 'prep';
+            document.getElementById('battleStart').disabled = true;
+            document.getElementById('battlePhase').textContent = 'Chuẩn bị lập luận';
+            document.getElementById('battleStart').textContent = 'Đang chuẩn bị…';
+            runBattleClock(60, () => startBattleSpeech())
+        }
+        function startBattleSpeech() {
+            battleStage = 'speech';
+            document.getElementById('battlePhase').textContent = 'Lượt trình bày của bạn';
+            document.getElementById('battleStart').textContent = 'Đang trình bày · tối đa 2 phút';
+            document.getElementById('battlePresentation').hidden = false;
+            runBattleClock(120, () => openBattleScoring())
+        }
+        function openBattleScoring() {
+            stopBattleTimer();
+            battleStage = 'score';
+            document.getElementById('battlePhase').textContent = 'Tự đánh giá';
+            document.getElementById('battlePresentation').hidden = true;
+            document.getElementById('battleScoring').hidden = false;
+            document.getElementById('battleStart').textContent = 'Đã hết thời gian';
+            document.getElementById('battleStart').disabled = true;
+            const criteria = ['Nội dung & lập luận', 'Dẫn chứng & ví dụ', 'Phong thái tự tin', 'Giọng nói & biểu cảm', 'Tương tác & xử lý câu hỏi'];
+            document.getElementById('scoreSliders').innerHTML = criteria.map((c, i) => `<label class="score-row"><b>${c}</b><output id="scoreOut${i}">15</output><input type="range" min="0" max="20" value="15" data-score="${i}" oninput="document.getElementById('scoreOut${i}').value=this.value"></label>`).join('');
+        }
+        function submitBattle() {
+            if (battleStage !== 'score')
+                return;
+            const score = [...document.querySelectorAll('[data-score]')].reduce((a, x) => a + (+x.value), 0);
+            const won = score >= 70;
+            const reward = won ? 50 : 20;
+            coins += reward;
+            battleEarned += reward;
+            battleCount++;
+            battleBest = Math.max(battleBest, score);
+            ls.s('su-coins', coins);
+            ls.s('su-b-count', battleCount);
+            ls.s('su-b-best', battleBest);
+            ls.s('su-b-coins', battleEarned);
+            battleStage = 'done';
+            document.getElementById('battleScoring').hidden = true;
+            const res = document.getElementById('battleResult');
+            res.hidden = false;
+            res.innerHTML = `<h3>${won ? '🏆 Trận đấu hoàn thành tốt!' : '👏 Bạn đã hoàn thành trận đấu!'}</h3><p style="font-size:32px;font-weight:800;color:var(--g);margin:6px 0">${score}/100 điểm</p><p class="mut">${won ? 'Bạn đạt từ 70 điểm trở lên trong lượt tự đánh giá.' : 'Tiếp tục luyện tập để cải thiện điểm số ở trận sau.'}</p><p style="margin-top:8px"><b>🪙 +${reward} xu</b> đã được cộng vào ví SkillUp.</p><button class="btn" style="margin-top:12px" onclick="beginBattle()">Chơi trận tiếp theo</button> <a class="btn o" href="#doi-qua" style="display:inline-block;text-decoration:none">Đến cửa hàng đổi quà</a>`;
+            renderBattle();
+            renderRewards();
+            toast('Bạn nhận được ' + reward + ' xu từ SkillUp Battle!')
+        }
+        // Private room prototype: rooms persist only in this browser/device.
+        let activeRoom = ls.g('su-active-room', null)
+            , rooms = ls.g('su-rooms', {});
+        function renderRoom() {
+            const box = document.getElementById('roomInfo');
+            if (!box)
+                return;
+            if (activeRoom && rooms[activeRoom]) {
+                const r = rooms[activeRoom];
+                box.innerHTML = `<div class="card" style="margin-top:8px"><p><b>Phòng đang mở · ${esc(r.host)}</b></p><div class="room-code">${activeRoom}</div><p class="mut" style="margin-top:6px">${r.players.length}/2 người · Chủ đề: ${esc(r.topic)}</p><p style="margin-top:8px">${r.players.map(n => '👤 ' + esc(n)).join(' &nbsp; ')}</p><button class="btn" id="roomLaunch" style="margin-top:10px">Bắt đầu trận trong phòng</button></div>`;
+            } else
+                box.textContent = 'Chưa có phòng nào được tạo.'
+        }
+        document.getElementById('createRoom').addEventListener('click', () => {
+            const host = document.getElementById('roomHost').value.trim() || 'Người chơi 1';
+            const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+            rooms[code] = {
+                host,
+                players: [host],
+                topic: B_TOPICS[Math.floor(Math.random() * B_TOPICS.length)]
+            };
+            activeRoom = code;
+            ls.s('su-rooms', rooms);
+            ls.s('su-active-room', activeRoom);
+            document.getElementById('roomCodeInput').value = code;
+            renderRoom();
+            toast('Đã tạo phòng. Gửi mã này cho bạn cùng chơi!')
+        }
+        );
+        document.getElementById('joinRoom').addEventListener('click', () => {
+            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            const r = rooms[code];
+            if (!r)
+                return toast('Không tìm thấy phòng trên thiết bị này. Phòng trực tuyến cần máy chủ chung.');
+            const guest = pf.n || 'Người chơi 2';
+            if (!r.players.includes(guest) && r.players.length < 2)
+                r.players.push(guest);
+            activeRoom = code;
+            ls.s('su-rooms', rooms);
+            ls.s('su-active-room', activeRoom);
+            renderRoom();
+            toast('Đã tham gia phòng!')
+        }
+        );
+        document.addEventListener('click', e => {
+            if (e.target && e.target.id === 'roomLaunch') {
+                if (!activeRoom || !rooms[activeRoom])
+                    return;
+                beginBattle();
+                document.getElementById('battleTopic').textContent = rooms[activeRoom].topic;
+                document.getElementById('screenTopic').textContent = rooms[activeRoom].topic;
+                document.getElementById('battleTopic').textContent = rooms[activeRoom].topic;
+            }
+        }
+        );
+        const soloSel = document.getElementById('soloTopic');
+        soloSel.innerHTML = B_TOPICS.map((t, i) => `<option value="${i}">${esc(t)}</option>`).join('');
+        document.getElementById('soloStart').addEventListener('click', () => {
+            beginBattle();
+            const topic = B_TOPICS[+soloSel.value];
+            document.getElementById('battleTopic').textContent = topic;
+            document.getElementById('screenTopic').textContent = topic;
+            document.getElementById('opponentName').textContent = 'Tự luyện';
+            document.getElementById('mySide').textContent = 'Luyện tập cá nhân';
+            document.getElementById('opSide').textContent = 'Tự đánh giá';
+            document.getElementById('soloNote').textContent = 'Đang luyện tập cá nhân với chủ đề: ' + topic;
+        }
+        );
+        renderRoom();
+        document.getElementById('findOpponent').addEventListener('click', beginBattle);
+        document.getElementById('battleStart').addEventListener('click', startBattlePrep);
+        document.getElementById('finishSpeech').addEventListener('click', openBattleScoring);
+        document.getElementById('submitBattleScore').addEventListener('click', submitBattle);
+        renderBattle();
+
+        addEventListener("hashchange", route);
+        route();
+    </script>
+</body>
+
+</html>
