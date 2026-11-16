@@ -7,6 +7,7 @@
     <title>SkillUp – Kỹ năng thuyết trình cho sinh viên</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script>
         // 1. Chặn chuột phải
         document.addEventListener('contextmenu', e => e.preventDefault());
@@ -1395,12 +1396,11 @@
                 </div>
             </div>
             <div class="room-panel">
-                <h3>🏠 Tạo phòng / tham gia phòng</h3>
-                <p class="mut" style="margin-top:4px">Tạo phòng riêng để rủ bạn bè cùng luyện tranh biện. Bản hiện tại
-                    mô phỏng phòng trên cùng thiết bị; để bạn bè ở xa tham gia thật cần máy chủ trực tuyến.</p>
+                <h3>🏠 Tạo phòng / tham gia phòng trực tuyến</h3>
+                <p class="mut" style="margin-top:4px">Tạo phòng riêng để rủ bạn bè cùng luyện tranh biện trực tuyến (P2P). Người chơi ở máy tính hoặc điện thoại khác chỉ cần nhập đúng mã phòng là có thể vào thi đấu cùng bạn ngay lập tức.</p>
                 <div class="room-actions">
                     <div>
-                        <label class="fl" for="roomHost">Tên người tạo phòng</label>
+                        <label class="fl" for="roomHost">Tên của bạn</label>
                         <input id="roomHost" placeholder="Ví dụ: Minh Anh" maxlength="30">
                         <button class="btn" id="createRoom" style="margin-top:9px;width:100%">＋ Tạo phòng mới</button>
                     </div>
@@ -2456,21 +2456,27 @@
             }
                 , 1000)
         }
-        function startBattlePrep() {
+        function startBattlePrep(broadcast = true) {
             if (battleStage !== 'ready')
                 return;
             battleStage = 'prep';
             document.getElementById('battleStart').disabled = true;
             document.getElementById('battlePhase').textContent = 'Chuẩn bị lập luận';
             document.getElementById('battleStart').textContent = 'Đang chuẩn bị…';
-            runBattleClock(60, () => startBattleSpeech())
+            if (broadcast && activeConn && activeConn.open) {
+                try { activeConn.send({ type: 'SYNC_PHASE', phase: 'prep' }); } catch(e){}
+            }
+            runBattleClock(60, () => startBattleSpeech());
         }
-        function startBattleSpeech() {
+        function startBattleSpeech(broadcast = true) {
             battleStage = 'speech';
             document.getElementById('battlePhase').textContent = 'Lượt trình bày của bạn';
             document.getElementById('battleStart').textContent = 'Đang trình bày · tối đa 2 phút';
             document.getElementById('battlePresentation').hidden = false;
-            runBattleClock(120, () => openBattleScoring())
+            if (broadcast && activeConn && activeConn.open) {
+                try { activeConn.send({ type: 'SYNC_PHASE', phase: 'speech' }); } catch(e){}
+            }
+            runBattleClock(120, () => openBattleScoring());
         }
         function openBattleScoring() {
             stopBattleTimer();
@@ -2504,63 +2510,309 @@
             res.innerHTML = `<h3>${won ? '🏆 Trận đấu hoàn thành tốt!' : '👏 Bạn đã hoàn thành trận đấu!'}</h3><p style="font-size:32px;font-weight:800;color:var(--g);margin:6px 0">${score}/100 điểm</p><p class="mut">${won ? 'Bạn đạt từ 70 điểm trở lên trong lượt tự đánh giá.' : 'Tiếp tục luyện tập để cải thiện điểm số ở trận sau.'}</p><p style="margin-top:8px"><b>🪙 +${reward} xu</b> đã được cộng vào ví SkillUp.</p><button class="btn" style="margin-top:12px" onclick="beginBattle()">Chơi trận tiếp theo</button> <a class="btn o" href="#doi-qua" style="display:inline-block;text-decoration:none">Đến cửa hàng đổi quà</a>`;
             renderBattle();
             renderRewards();
-            toast('Bạn nhận được ' + reward + ' xu từ SkillUp Battle!')
+            toast('Bạn nhận được ' + reward + ' xu từ SkillUp Battle!');
+            if (activeConn && activeConn.open) {
+                try {
+                    const myName = isRoomHost ? (rooms[activeRoom]?.host || 'Chủ phòng') : (pf.n || 'Đối thủ');
+                    activeConn.send({ type: 'OPPONENT_SCORE', score, name: myName });
+                } catch(e){}
+            }
         }
-        // Private room prototype: rooms persist only in this browser/device.
-        let activeRoom = ls.g('su-active-room', null)
-            , rooms = ls.g('su-rooms', {});
+
+        // Online & Local Multiplayer Room System
+        let activeRoom = ls.g('su-active-room', null),
+            rooms = ls.g('su-rooms', {}),
+            myPeer = null,
+            activeConn = null,
+            isRoomHost = false;
+
         function renderRoom() {
             const box = document.getElementById('roomInfo');
-            if (!box)
-                return;
+            if (!box) return;
             if (activeRoom && rooms[activeRoom]) {
                 const r = rooms[activeRoom];
-                box.innerHTML = `<div class="card" style="margin-top:8px"><p><b>Phòng đang mở · ${esc(r.host)}</b></p><div class="room-code">${activeRoom}</div><p class="mut" style="margin-top:6px">${r.players.length}/2 người · Chủ đề: ${esc(r.topic)}</p><p style="margin-top:8px">${r.players.map(n => '👤 ' + esc(n)).join(' &nbsp; ')}</p><button class="btn" id="roomLaunch" style="margin-top:10px">Bắt đầu trận trong phòng</button></div>`;
-            } else
-                box.textContent = 'Chưa có phòng nào được tạo.'
+                const isOnline = !!r.isOnline;
+                const count = (r.players && r.players.length) || 1;
+                const isFull = count >= 2;
+                box.innerHTML = `
+                    <div class="card" style="margin-top:8px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                            <p><b>Phòng trực tuyến · Chủ phòng: ${esc(r.host)}</b></p>
+                            <span class="reward-tag" style="background:#e8f5e9;color:#2c5a38">${isOnline ? '🟢 TRỰC TUYẾN (P2P)' : '💻 NỘI BỘ'}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;margin:10px 0">
+                            <div class="room-code" style="margin:0;letter-spacing:3px">${esc(activeRoom)}</div>
+                            <button class="btn o" type="button" style="padding:6px 14px;font-size:13px" onclick="navigator.clipboard.writeText('${activeRoom}');toast('Đã sao chép mã phòng: ${activeRoom}!')">📋 Sao chép mã</button>
+                        </div>
+                        <p class="mut" style="margin-top:6px">${count}/2 người · Chủ đề: ${esc(r.topic)}</p>
+                        <p style="margin-top:8px;font-size:15px">
+                            ${r.players.map((n, i) => `<span>👤 <b>${esc(n)}</b> ${i === 0 ? '(Chủ phòng)' : '(Khách)'}</span>`).join(' &nbsp;•&nbsp; ')}
+                        </p>
+                        ${isRoomHost ? `
+                            <button class="btn" id="roomLaunch" style="margin-top:12px;width:100%" ${isFull ? '' : 'disabled'}>
+                                ${isFull ? '🚀 Bắt đầu trận trong phòng' : '⏳ Chờ người chơi khác nhập mã phòng…'}
+                            </button>
+                        ` : `
+                            <div style="margin-top:12px;padding:10px;background:var(--soft);border-radius:10px;font-size:14px;color:var(--ink)">
+                                ⏳ <b>Đã tham gia phòng!</b> Đang chờ chủ phòng (<b>${esc(r.host)}</b>) bấm bắt đầu trận đấu…
+                            </div>
+                        `}
+                    </div>`;
+            } else {
+                box.textContent = 'Chưa có phòng nào được tạo.';
+            }
         }
-        document.getElementById('createRoom').addEventListener('click', () => {
-            const host = document.getElementById('roomHost').value.trim() || 'Người chơi 1';
+
+        function handlePeerMessage(data, conn) {
+            if (!data) return;
+            if (data.type === 'JOIN_REQ') {
+                if (isRoomHost && activeRoom && rooms[activeRoom]) {
+                    const r = rooms[activeRoom];
+                    if (!r.players.includes(data.name) && r.players.length < 2) {
+                        r.players.push(data.name);
+                    }
+                    renderRoom();
+                    toast(`🎉 ${data.name} đã tham gia phòng!`);
+                    try {
+                        conn.send({
+                            type: 'ROOM_SYNC',
+                            room: r,
+                            code: activeRoom
+                        });
+                    } catch(e){}
+                }
+            } else if (data.type === 'ROOM_SYNC') {
+                rooms[data.code] = data.room;
+                activeRoom = data.code;
+                renderRoom();
+                toast('✅ Đã tham gia phòng của ' + data.room.host + '!');
+            } else if (data.type === 'START_BATTLE') {
+                startOnlineBattle(data);
+            } else if (data.type === 'SYNC_PHASE') {
+                if (data.phase === 'prep' && battleStage === 'ready') {
+                    startBattlePrep(false);
+                } else if (data.phase === 'speech' && battleStage === 'prep') {
+                    startBattleSpeech(false);
+                }
+            } else if (data.type === 'OPPONENT_SCORE') {
+                toast(`🏆 ${data.name} đã hoàn thành với ${data.score}/100 điểm!`);
+            }
+        }
+
+        function createOnlineRoom(hostName) {
             const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+            if (myPeer) { try { myPeer.destroy(); } catch(e){} }
+            isRoomHost = true;
+
             rooms[code] = {
-                host,
-                players: [host],
-                topic: B_TOPICS[Math.floor(Math.random() * B_TOPICS.length)]
+                host: hostName,
+                players: [hostName],
+                topic: B_TOPICS[Math.floor(Math.random() * B_TOPICS.length)],
+                isOnline: true
             };
             activeRoom = code;
             ls.s('su-rooms', rooms);
             ls.s('su-active-room', activeRoom);
             document.getElementById('roomCodeInput').value = code;
             renderRoom();
-            toast('Đã tạo phòng. Gửi mã này cho bạn cùng chơi!')
+
+            if (typeof Peer !== 'undefined') {
+                toast('⏳ Đang mở máy chủ trực tuyến cho phòng ' + code + '…');
+                try {
+                    myPeer = new Peer('skillup-live-' + code.toLowerCase(), {
+                        debug: 0,
+                        config: {
+                            iceServers: [
+                                { urls: 'stun:stun.l.google.com:19302' },
+                                { urls: 'stun:global.stun.twilio.com:3478' }
+                            ]
+                        }
+                    });
+
+                    myPeer.on('open', () => {
+                        toast('🟢 Phòng trực tuyến đã sẵn sàng! Gửi mã ' + code + ' cho bạn bè.');
+                        renderRoom();
+                    });
+
+                    myPeer.on('connection', conn => {
+                        activeConn = conn;
+                        conn.on('data', data => handlePeerMessage(data, conn));
+                        conn.on('close', () => {
+                            toast('Người chơi đã rời phòng.');
+                            if (rooms[activeRoom] && rooms[activeRoom].players.length > 1) {
+                                rooms[activeRoom].players = [rooms[activeRoom].host];
+                                renderRoom();
+                            }
+                        });
+                    });
+
+                    myPeer.on('error', err => {
+                        if (err.type === 'unavailable-id') {
+                            createOnlineRoom(hostName);
+                        } else {
+                            console.warn('Peer host error:', err);
+                        }
+                    });
+                } catch(e) {
+                    console.warn(e);
+                }
+            } else {
+                toast('Đã tạo phòng (Mô phỏng nội bộ trên thiết bị).');
+            }
         }
-        );
+
+        function joinOnlineRoom(code, guestName) {
+            if (!code || code.length < 4) {
+                return toast('Vui lòng nhập mã phòng hợp lệ!');
+            }
+
+            // Kiểm tra nếu phòng đã có trong cùng trình duyệt
+            if (rooms[code]) {
+                isRoomHost = false;
+                activeRoom = code;
+                if (!rooms[code].players.includes(guestName) && rooms[code].players.length < 2) {
+                    rooms[code].players.push(guestName);
+                }
+                ls.s('su-rooms', rooms);
+                ls.s('su-active-room', activeRoom);
+                renderRoom();
+                toast('Đã tham gia phòng!');
+                return;
+            }
+
+            if (typeof Peer === 'undefined') {
+                return toast('Không tìm thấy phòng trên thiết bị này. Thư viện mạng trực tuyến chưa tải xong.');
+            }
+
+            if (myPeer) { try { myPeer.destroy(); } catch(e){} }
+            isRoomHost = false;
+
+            toast('⏳ Đang tìm kiếm và kết nối tới phòng ' + code + '…');
+            const box = document.getElementById('roomInfo');
+            if (box) {
+                box.innerHTML = `<div class="card" style="margin-top:8px"><p>⏳ Đang kết nối tới phòng trực tuyến <b>${esc(code)}</b>…</p></div>`;
+            }
+
+            try {
+                myPeer = new Peer({
+                    debug: 0,
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:global.stun.twilio.com:3478' }
+                        ]
+                    }
+                });
+
+                let connected = false;
+                const timer = setTimeout(() => {
+                    if (!connected) {
+                        toast('❌ Không tìm thấy phòng hoặc chủ phòng chưa online.');
+                        if (box) box.textContent = 'Không tìm thấy phòng ' + code + '. Hãy chắc chắn rằng chủ phòng đang mở trang web!';
+                    }
+                }, 12000);
+
+                myPeer.on('open', () => {
+                    const targetPeerId = 'skillup-live-' + code.toLowerCase();
+                    const conn = myPeer.connect(targetPeerId, { reliable: true });
+                    activeConn = conn;
+
+                    conn.on('open', () => {
+                        connected = true;
+                        clearTimeout(timer);
+                        conn.send({
+                            type: 'JOIN_REQ',
+                            name: guestName,
+                            code: code
+                        });
+                    });
+
+                    conn.on('data', data => handlePeerMessage(data, conn));
+
+                    conn.on('close', () => {
+                        toast('Chủ phòng đã đóng kết nối.');
+                        activeRoom = null;
+                        renderRoom();
+                    });
+
+                    conn.on('error', () => {
+                        clearTimeout(timer);
+                        toast('Không thể kết nối tới phòng này.');
+                    });
+                });
+
+                myPeer.on('error', err => {
+                    clearTimeout(timer);
+                    toast('Lỗi kết nối phòng: ' + (err.type || 'Lỗi mạng'));
+                });
+            } catch(e) {
+                toast('Lỗi: ' + e.message);
+            }
+        }
+
+        function startOnlineBattle(data) {
+            stopBattleTimer();
+            battleStage = 'ready';
+            battleRemaining = 60;
+            battleTopicNow = data.topic;
+
+            const amHost = isRoomHost;
+            battleMySide = amHost ? 'Đội ủng hộ' : 'Đội phản đối';
+            const opSide = amHost ? 'Đội phản đối' : 'Đội ủng hộ';
+            const opponent = amHost ? (data.guest || 'Khách') : (data.host || 'Chủ phòng');
+
+            const arena = document.getElementById('battleArena');
+            arena.hidden = false;
+            document.getElementById('matchStatus').textContent = `Đã kết nối trận trực tuyến với ${opponent}!`;
+            document.getElementById('opponentName').textContent = opponent;
+            document.getElementById('mySide').textContent = battleMySide;
+            document.getElementById('opSide').textContent = opSide;
+            document.getElementById('battleTopic').textContent = battleTopicNow;
+            document.getElementById('screenTopic').textContent = battleTopicNow;
+            document.getElementById('battlePhase').textContent = 'Chuẩn bị';
+            document.getElementById('battleStart').textContent = 'Bắt đầu chuẩn bị 60 giây';
+            document.getElementById('battleStart').disabled = false;
+            document.getElementById('battlePresentation').hidden = true;
+            document.getElementById('battleScoring').hidden = true;
+            document.getElementById('battleResult').hidden = true;
+            showBattleTime();
+            arena.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            toast('⚔️ Trận đấu trực tuyến đã bắt đầu!');
+        }
+
+        document.getElementById('createRoom').addEventListener('click', () => {
+            const host = document.getElementById('roomHost').value.trim() || pf.n || 'Người chơi 1';
+            createOnlineRoom(host);
+        });
+
         document.getElementById('joinRoom').addEventListener('click', () => {
             const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-            const r = rooms[code];
-            if (!r)
-                return toast('Không tìm thấy phòng trên thiết bị này. Phòng trực tuyến cần máy chủ chung.');
-            const guest = pf.n || 'Người chơi 2';
-            if (!r.players.includes(guest) && r.players.length < 2)
-                r.players.push(guest);
-            activeRoom = code;
-            ls.s('su-rooms', rooms);
-            ls.s('su-active-room', activeRoom);
-            renderRoom();
-            toast('Đã tham gia phòng!')
-        }
-        );
+            const guest = document.getElementById('roomHost').value.trim() || pf.n || 'Người chơi 2';
+            joinOnlineRoom(code, guest);
+        });
+
         document.addEventListener('click', e => {
             if (e.target && e.target.id === 'roomLaunch') {
                 if (!activeRoom || !rooms[activeRoom])
                     return;
-                beginBattle();
-                document.getElementById('battleTopic').textContent = rooms[activeRoom].topic;
-                document.getElementById('screenTopic').textContent = rooms[activeRoom].topic;
-                document.getElementById('battleTopic').textContent = rooms[activeRoom].topic;
+                const r = rooms[activeRoom];
+                const battleData = {
+                    type: 'START_BATTLE',
+                    topic: r.topic,
+                    host: r.host,
+                    guest: r.players[1] || 'Người chơi 2',
+                    code: activeRoom
+                };
+                if (activeConn && activeConn.open) {
+                    try { activeConn.send(battleData); } catch(e){}
+                }
+                startOnlineBattle(battleData);
             }
-        }
-        );
+        });
+
         const soloSel = document.getElementById('soloTopic');
         soloSel.innerHTML = B_TOPICS.map((t, i) => `<option value="${i}">${esc(t)}</option>`).join('');
         document.getElementById('soloStart').addEventListener('click', () => {
@@ -2572,11 +2824,11 @@
             document.getElementById('mySide').textContent = 'Luyện tập cá nhân';
             document.getElementById('opSide').textContent = 'Tự đánh giá';
             document.getElementById('soloNote').textContent = 'Đang luyện tập cá nhân với chủ đề: ' + topic;
-        }
-        );
+        });
+
         renderRoom();
         document.getElementById('findOpponent').addEventListener('click', beginBattle);
-        document.getElementById('battleStart').addEventListener('click', startBattlePrep);
+        document.getElementById('battleStart').addEventListener('click', () => startBattlePrep(true));
         document.getElementById('finishSpeech').addEventListener('click', openBattleScoring);
         document.getElementById('submitBattleScore').addEventListener('click', submitBattle);
         renderBattle();
