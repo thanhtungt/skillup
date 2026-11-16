@@ -7,6 +7,44 @@
     <title>SkillUp – Kỹ năng thuyết trình cho sinh viên</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <script>
+        // 1. Chặn chuột phải
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // 2. Chặn các phím tắt: F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U (xem nguồn), Ctrl+S (lưu trang)
+        document.addEventListener('keydown', e => {
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
+                (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key))
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
+        // 3. Vô hiệu hóa console
+        if (typeof window.console === 'object') {
+            ['log', 'warn', 'error', 'info', 'debug', 'table'].forEach(m => {
+                console[m] = function () { };
+            });
+        }
+
+        // 4. Debugger Trap: Nếu mở DevTools qua menu trình duyệt (3 dấu chấm), trang sẽ bị khóa
+        setInterval(() => {
+            const before = performance.now();
+            debugger;
+            const after = performance.now();
+            if (after - before > 100) {
+                document.body.innerHTML = `
+                    <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;font-family:sans-serif;color:#1c2b21;background:#f4f8ee;text-align:center;padding:20px;">
+                        <h2 style="margin-bottom:10px;">⚠️ Chế độ kiểm tra bị vô hiệu hóa</h2>
+                        <p>Vui lòng đóng Developer Tools (F12) và tải lại trang web.</p>
+                    </div>`;
+            }
+        }, 500);
+    </script>
     <style>
         :root {
             --bg: #f4f8ee;
