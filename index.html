@@ -10,7 +10,7 @@
     <title>SkillUp – Kỹ năng thuyết trình cho sinh viên</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
     <script>
         // 1. Chặn chuột phải
         document.addEventListener('contextmenu', e => e.preventDefault());
@@ -2466,8 +2466,8 @@
             document.getElementById('battleStart').disabled = true;
             document.getElementById('battlePhase').textContent = 'Chuẩn bị lập luận';
             document.getElementById('battleStart').textContent = 'Đang chuẩn bị…';
-            if (broadcast && activeConn && activeConn.open) {
-                try { activeConn.send({ type: 'SYNC_PHASE', phase: 'prep' }); } catch(e){}
+            if (broadcast) {
+                sendNetworkMessage({ type: 'SYNC_PHASE', phase: 'prep' });
             }
             runBattleClock(60, () => startBattleSpeech());
         }
@@ -2476,8 +2476,8 @@
             document.getElementById('battlePhase').textContent = 'Lượt trình bày của bạn';
             document.getElementById('battleStart').textContent = 'Đang trình bày · tối đa 2 phút';
             document.getElementById('battlePresentation').hidden = false;
-            if (broadcast && activeConn && activeConn.open) {
-                try { activeConn.send({ type: 'SYNC_PHASE', phase: 'speech' }); } catch(e){}
+            if (broadcast) {
+                sendNetworkMessage({ type: 'SYNC_PHASE', phase: 'speech' });
             }
             runBattleClock(120, () => openBattleScoring());
         }
@@ -2514,20 +2514,87 @@
             renderBattle();
             renderRewards();
             toast('Bạn nhận được ' + reward + ' xu từ SkillUp Battle!');
-            if (activeConn && activeConn.open) {
-                try {
-                    const myName = isRoomHost ? (rooms[activeRoom]?.host || 'Chủ phòng') : (pf.n || 'Đối thủ');
-                    activeConn.send({ type: 'OPPONENT_SCORE', score, name: myName });
-                } catch(e){}
-            }
+            const myName = isRoomHost ? (rooms[activeRoom]?.host || 'Chủ phòng') : (pf.n || 'Đối thủ');
+            sendNetworkMessage({ type: 'OPPONENT_SCORE', score, name: myName });
         }
 
-        // Online & Local Multiplayer Room System
+        // Online Multiplayer via Secure WebSocket (MQTT Cloud Relay)
         let activeRoom = ls.g('su-active-room', null),
             rooms = ls.g('su-rooms', {}),
-            myPeer = null,
-            activeConn = null,
-            isRoomHost = false;
+            mqttClient = null,
+            currentRoomCode = null,
+            myClientId = 'su_' + Math.random().toString(36).slice(2, 10),
+            isRoomHost = false,
+            joinRetryTimer = null;
+
+        function getMqttClient(onReady) {
+            if (mqttClient && mqttClient.connected) {
+                if (onReady) onReady(mqttClient);
+                return;
+            }
+
+            if (typeof mqtt === 'undefined') {
+                toast('Đang nạp mạng trực tuyến, vui lòng thử lại sau giây lát...');
+                return;
+            }
+
+            const brokers = [
+                'wss://broker.hivemq.com:8884/mqtt',
+                'wss://broker.emqx.io:8084/mqtt'
+            ];
+            let brokerIdx = 0;
+
+            function connectNext() {
+                const url = brokers[brokerIdx];
+                try {
+                    mqttClient = mqtt.connect(url, {
+                        clientId: myClientId,
+                        clean: true,
+                        connectTimeout: 5000,
+                        reconnectPeriod: 3000
+                    });
+
+                    mqttClient.on('connect', () => {
+                        if (onReady) onReady(mqttClient);
+                    });
+
+                    mqttClient.on('error', err => {
+                        console.warn('MQTT broker failed:', url, err);
+                        try { mqttClient.end(true); } catch(e){}
+                        brokerIdx = (brokerIdx + 1) % brokers.length;
+                        if (brokerIdx !== 0) {
+                            setTimeout(connectNext, 1000);
+                        }
+                    });
+
+                    mqttClient.on('message', (topic, message) => {
+                        try {
+                            const data = JSON.parse(message.toString());
+                            if (data.senderId === myClientId) return;
+                            handleNetworkMessage(data);
+                        } catch(e) {
+                            console.error('MQTT parse error:', e);
+                        }
+                    });
+                } catch(e) {
+                    console.error('MQTT connect error:', e);
+                }
+            }
+
+            connectNext();
+        }
+
+        function sendNetworkMessage(msg) {
+            if (mqttClient && mqttClient.connected && currentRoomCode) {
+                msg.senderId = myClientId;
+                const topic = 'skillup/room/' + currentRoomCode.toLowerCase();
+                try {
+                    mqttClient.publish(topic, JSON.stringify(msg), { qos: 1 });
+                } catch(e) {
+                    console.error('Publish error:', e);
+                }
+            }
+        }
 
         function renderRoom() {
             const box = document.getElementById('roomInfo');
@@ -2541,7 +2608,7 @@
                     <div class="card" style="margin-top:8px">
                         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
                             <p><b>Phòng trực tuyến · Chủ phòng: ${esc(r.host)}</b></p>
-                            <span class="reward-tag" style="background:#e8f5e9;color:#2c5a38">${isOnline ? '🟢 TRỰC TUYẾN (P2P)' : '💻 NỘI BỘ'}</span>
+                            <span class="reward-tag" style="background:#e8f5e9;color:#2c5a38">${isOnline ? '🟢 TRỰC TUYẾN' : '💻 NỘI BỘ'}</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;margin:10px 0">
                             <div class="room-code" style="margin:0;letter-spacing:3px">${esc(activeRoom)}</div>
@@ -2566,27 +2633,30 @@
             }
         }
 
-        function handlePeerMessage(data, conn) {
+        function handleNetworkMessage(data) {
             if (!data) return;
             if (data.type === 'JOIN_REQ') {
-                if (isRoomHost && activeRoom && rooms[activeRoom]) {
+                if (isRoomHost && activeRoom && rooms[activeRoom] && data.code === activeRoom) {
                     const r = rooms[activeRoom];
                     if (!r.players.includes(data.name) && r.players.length < 2) {
                         r.players.push(data.name);
                     }
                     renderRoom();
                     toast(`🎉 ${data.name} đã tham gia phòng!`);
-                    try {
-                        conn.send({
-                            type: 'ROOM_SYNC',
-                            room: r,
-                            code: activeRoom
-                        });
-                    } catch(e){}
+                    sendNetworkMessage({
+                        type: 'ROOM_SYNC',
+                        room: r,
+                        code: activeRoom
+                    });
                 }
             } else if (data.type === 'ROOM_SYNC') {
+                if (joinRetryTimer) {
+                    clearInterval(joinRetryTimer);
+                    joinRetryTimer = null;
+                }
                 rooms[data.code] = data.room;
                 activeRoom = data.code;
+                currentRoomCode = data.code;
                 renderRoom();
                 toast('✅ Đã tham gia phòng của ' + data.room.host + '!');
             } else if (data.type === 'START_BATTLE') {
@@ -2599,12 +2669,17 @@
                 }
             } else if (data.type === 'OPPONENT_SCORE') {
                 toast(`🏆 ${data.name} đã hoàn thành với ${data.score}/100 điểm!`);
+            } else if (data.type === 'HOST_CLOSED') {
+                toast('Chủ phòng đã đóng phòng.');
+                activeRoom = null;
+                currentRoomCode = null;
+                renderRoom();
             }
         }
 
         function createOnlineRoom(hostName) {
             const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-            if (myPeer) { try { myPeer.destroy(); } catch(e){} }
+            currentRoomCode = code;
             isRoomHost = true;
 
             rooms[code] = {
@@ -2619,49 +2694,19 @@
             document.getElementById('roomCodeInput').value = code;
             renderRoom();
 
-            if (typeof Peer !== 'undefined') {
-                toast('⏳ Đang mở máy chủ trực tuyến cho phòng ' + code + '…');
-                try {
-                    myPeer = new Peer('skillup-live-' + code.toLowerCase(), {
-                        debug: 0,
-                        config: {
-                            iceServers: [
-                                { urls: 'stun:stun.l.google.com:19302' },
-                                { urls: 'stun:global.stun.twilio.com:3478' }
-                            ]
-                        }
-                    });
+            toast('⏳ Đang tạo phòng trực tuyến ' + code + '…');
 
-                    myPeer.on('open', () => {
+            getMqttClient(client => {
+                const topic = 'skillup/room/' + code.toLowerCase();
+                client.subscribe(topic, { qos: 1 }, err => {
+                    if (!err) {
                         toast('🟢 Phòng trực tuyến đã sẵn sàng! Gửi mã ' + code + ' cho bạn bè.');
                         renderRoom();
-                    });
-
-                    myPeer.on('connection', conn => {
-                        activeConn = conn;
-                        conn.on('data', data => handlePeerMessage(data, conn));
-                        conn.on('close', () => {
-                            toast('Người chơi đã rời phòng.');
-                            if (rooms[activeRoom] && rooms[activeRoom].players.length > 1) {
-                                rooms[activeRoom].players = [rooms[activeRoom].host];
-                                renderRoom();
-                            }
-                        });
-                    });
-
-                    myPeer.on('error', err => {
-                        if (err.type === 'unavailable-id') {
-                            createOnlineRoom(hostName);
-                        } else {
-                            console.warn('Peer host error:', err);
-                        }
-                    });
-                } catch(e) {
-                    console.warn(e);
-                }
-            } else {
-                toast('Đã tạo phòng (Mô phỏng nội bộ trên thiết bị).');
-            }
+                    } else {
+                        toast('Không thể đăng ký phòng: ' + err.message);
+                    }
+                });
+            });
         }
 
         function joinOnlineRoom(code, guestName) {
@@ -2669,88 +2714,47 @@
                 return toast('Vui lòng nhập mã phòng hợp lệ!');
             }
 
-            // Kiểm tra nếu phòng đã có trong cùng trình duyệt
-            if (rooms[code]) {
-                isRoomHost = false;
-                activeRoom = code;
-                if (!rooms[code].players.includes(guestName) && rooms[code].players.length < 2) {
-                    rooms[code].players.push(guestName);
-                }
-                ls.s('su-rooms', rooms);
-                ls.s('su-active-room', activeRoom);
-                renderRoom();
-                toast('Đã tham gia phòng!');
-                return;
-            }
-
-            if (typeof Peer === 'undefined') {
-                return toast('Không tìm thấy phòng trên thiết bị này. Thư viện mạng trực tuyến chưa tải xong.');
-            }
-
-            if (myPeer) { try { myPeer.destroy(); } catch(e){} }
+            currentRoomCode = code;
             isRoomHost = false;
 
-            toast('⏳ Đang tìm kiếm và kết nối tới phòng ' + code + '…');
+            toast('⏳ Đang kết nối tới phòng trực tuyến ' + code + '…');
             const box = document.getElementById('roomInfo');
             if (box) {
-                box.innerHTML = `<div class="card" style="margin-top:8px"><p>⏳ Đang kết nối tới phòng trực tuyến <b>${esc(code)}</b>…</p></div>`;
+                box.innerHTML = `<div class="card" style="margin-top:8px"><p>⏳ Đang tìm kiếm và kết nối tới phòng <b>${esc(code)}</b>…</p></div>`;
             }
 
-            try {
-                myPeer = new Peer({
-                    debug: 0,
-                    config: {
-                        iceServers: [
-                            { urls: 'stun:stun.l.google.com:19302' },
-                            { urls: 'stun:global.stun.twilio.com:3478' }
-                        ]
-                    }
-                });
+            getMqttClient(client => {
+                const topic = 'skillup/room/' + code.toLowerCase();
+                client.subscribe(topic, { qos: 1 }, err => {
+                    if (err) return toast('Lỗi kết nối phòng: ' + err.message);
 
-                let connected = false;
-                const timer = setTimeout(() => {
-                    if (!connected) {
-                        toast('❌ Không tìm thấy phòng hoặc chủ phòng chưa online.');
-                        if (box) box.textContent = 'Không tìm thấy phòng ' + code + '. Hãy chắc chắn rằng chủ phòng đang mở trang web!';
-                    }
-                }, 12000);
+                    let attempts = 0;
+                    const maxAttempts = 5;
 
-                myPeer.on('open', () => {
-                    const targetPeerId = 'skillup-live-' + code.toLowerCase();
-                    const conn = myPeer.connect(targetPeerId, { reliable: true });
-                    activeConn = conn;
+                    if (joinRetryTimer) clearInterval(joinRetryTimer);
 
-                    conn.on('open', () => {
-                        connected = true;
-                        clearTimeout(timer);
-                        conn.send({
+                    function sendPing() {
+                        attempts++;
+                        sendNetworkMessage({
                             type: 'JOIN_REQ',
                             name: guestName,
                             code: code
                         });
-                    });
 
-                    conn.on('data', data => handlePeerMessage(data, conn));
+                        if (attempts >= maxAttempts) {
+                            clearInterval(joinRetryTimer);
+                            joinRetryTimer = null;
+                            if (!activeRoom || !rooms[code]) {
+                                toast('❌ Không tìm thấy phòng hoặc chủ phòng chưa online.');
+                                if (box) box.textContent = 'Không tìm thấy phòng ' + code + '. Hãy chắc chắn rằng chủ phòng đang mở trang web!';
+                            }
+                        }
+                    }
 
-                    conn.on('close', () => {
-                        toast('Chủ phòng đã đóng kết nối.');
-                        activeRoom = null;
-                        renderRoom();
-                    });
-
-                    conn.on('error', () => {
-                        clearTimeout(timer);
-                        toast('Không thể kết nối tới phòng này.');
-                    });
+                    sendPing();
+                    joinRetryTimer = setInterval(sendPing, 1500);
                 });
-
-                myPeer.on('error', err => {
-                    clearTimeout(timer);
-                    toast('Lỗi kết nối phòng: ' + (err.type || 'Lỗi mạng'));
-                });
-            } catch(e) {
-                toast('Lỗi: ' + e.message);
-            }
+            });
         }
 
         function startOnlineBattle(data) {
@@ -2809,10 +2813,14 @@
                     guest: r.players[1] || 'Người chơi 2',
                     code: activeRoom
                 };
-                if (activeConn && activeConn.open) {
-                    try { activeConn.send(battleData); } catch(e){}
-                }
+                sendNetworkMessage(battleData);
                 startOnlineBattle(battleData);
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (isRoomHost && currentRoomCode) {
+                sendNetworkMessage({ type: 'HOST_CLOSED', code: currentRoomCode });
             }
         });
 
