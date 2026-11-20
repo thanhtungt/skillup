@@ -50,6 +50,10 @@
         }, 500);
     </script>
     <style>
+        @keyframes pulse-mic { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.06); } }
+        .mic-live { color: #dc2626 !important; font-weight: 700 !important; animation: pulse-mic 1.2s infinite ease-in-out; display: inline-flex; align-items: center; gap: 4px; }
+        .ai-crit-bar { background: var(--line); border-radius: 6px; height: 8px; overflow: hidden; margin-top: 4px; }
+        .ai-crit-fill { background: var(--g); height: 100%; border-radius: 6px; transition: width 0.6s ease; }
         :root {
             --bg: #f4f8ee;
             --card: #fff;
@@ -1482,9 +1486,38 @@
                     <button class="btn" id="battleStart">Bắt đầu chuẩn bị 60 giây</button>
                 </div>
                 <div id="battlePresentation" hidden>
-                    <p class="mut" style="margin:12px 0">Đến lượt bạn trình bày. Hãy đứng lên và nói thành tiếng như
-                        đang ở trước lớp. Hết giờ, tự đánh giá phần thể hiện của mình.</p>
-                    <button class="btn" id="finishSpeech">Tôi đã trình bày xong</button>
+                    <div id="voiceAiContainer" style="margin-top:14px;padding:16px;border:1.5px solid var(--line);border-radius:14px;background:var(--card)">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span class="reward-tag" style="background:#e8f5e9;color:var(--g)">🎙️ VOICE AI COACH</span>
+                                <span id="voiceStatusBadge" style="font-size:13px;font-weight:600;color:var(--mut)">⚪ Micro đang sẵn sàng</span>
+                            </div>
+                            <div style="font-size:13px;color:var(--mut)">
+                                Số từ: <b id="speechWordCount" style="color:var(--ink)">0 từ</b>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
+                            <button class="btn" id="toggleVoiceBtn" type="button" style="display:inline-flex;align-items:center;gap:6px">
+                                🎙️ Bật Micro & Nói
+                            </button>
+                            <button class="btn o" id="clearVoiceBtn" type="button" style="display:inline-flex;align-items:center;gap:6px">
+                                🔄 Xóa nói lại
+                            </button>
+                        </div>
+
+                        <div>
+                            <textarea id="liveSpeechTranscript" rows="4" style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:15px;line-height:1.5;resize:vertical" placeholder="Bấm 'Bật Micro & Nói' và bắt đầu thuyết trình... Lời nói của bạn sẽ tự động được ghi lại thành văn bản tại đây trong thời gian thực. Bạn cũng có thể tự chỉnh sửa hoặc gõ nội dung vào ô này."></textarea>
+                        </div>
+                        <p class="mut" style="font-size:12.5px;margin-top:6px">
+                            💡 Mẹo: Trình bày có mở bài, dẫn chứng và kết luận. Khi hoàn thành bài nói hoặc hết giờ 2 phút, AI sẽ tự động phân tích nhịp điệu, cấu trúc và chấm điểm chi tiết.
+                        </p>
+                    </div>
+
+                    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+                        <button class="btn" id="finishAndScoreWithAi" style="flex:1;min-width:200px">✨ Hoàn thành & Chấm điểm cùng AI</button>
+                        <button class="btn o" id="finishSpeechManual" style="font-size:13px">Tự đánh giá thủ công</button>
+                    </div>
                 </div>
                 <div id="battleScoring" hidden>
                     <h3 style="margin:18px 0 8px">📊 Tự đánh giá lượt trình bày</h3>
@@ -2419,20 +2452,141 @@
         function showBattleTime() {
             document.getElementById('battleClock').textContent = String(Math.floor(battleRemaining / 60)).padStart(2, '0') + ':' + String(battleRemaining % 60).padStart(2, '0')
         }
+        let isSoloBattle = false;
+        let speechRec = null;
+        let isVoiceRecording = false;
+        let speechStartTime = 0;
+        let speechDurationSeconds = 0;
+        let recordedTranscript = '';
+
+        function initSpeechRec() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return null;
+            try {
+                const r = new SR();
+                r.continuous = true;
+                r.interimResults = true;
+                r.lang = 'vi-VN';
+                return r;
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function updateVoiceStatusUI(isLive, customText) {
+            const badge = document.getElementById('voiceStatusBadge');
+            const btn = document.getElementById('toggleVoiceBtn');
+            if (!badge || !btn) return;
+            if (isLive) {
+                badge.className = 'mic-live';
+                badge.textContent = '🔴 Đang nghe bạn nói…';
+                btn.innerHTML = '⏸️ Tạm dừng Micro';
+                btn.classList.add('o');
+            } else {
+                badge.className = '';
+                badge.textContent = customText || '⚪ Micro đang sẵn sàng';
+                btn.innerHTML = '🎙️ Bật Micro & Nói';
+                btn.classList.remove('o');
+            }
+        }
+
+        function startVoiceRecording() {
+            if (!speechRec) {
+                speechRec = initSpeechRec();
+            }
+            if (!speechRec) {
+                toast('Trình duyệt chưa hỗ trợ Web Speech API. Bạn có thể gõ nội dung vào ô để AI chấm nhé!');
+                updateVoiceStatusUI(false, '⚠️ Nhập trực tiếp bằng phím');
+                return;
+            }
+
+            try {
+                isVoiceRecording = true;
+                updateVoiceStatusUI(true);
+                if (!speechStartTime) speechStartTime = Date.now();
+
+                speechRec.onresult = event => {
+                    let finalStr = '';
+                    let interimStr = '';
+                    for (let i = 0; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalStr += event.results[i][0].transcript + ' ';
+                        } else {
+                            interimStr += event.results[i][0].transcript;
+                        }
+                    }
+                    recordedTranscript = (finalStr + ' ' + interimStr).replace(/\s+/g, ' ').trim();
+                    const txt = document.getElementById('liveSpeechTranscript');
+                    if (txt) {
+                        txt.value = recordedTranscript;
+                        txt.scrollTop = txt.scrollHeight;
+                    }
+                    const wc = document.getElementById('speechWordCount');
+                    if (wc) {
+                        const words = recordedTranscript.split(/\s+/).filter(Boolean).length;
+                        wc.textContent = words + ' từ';
+                    }
+                };
+
+                speechRec.onerror = event => {
+                    console.warn('SpeechRec error:', event.error);
+                    if (event.error === 'not-allowed') {
+                        toast('⚠️ Vui lòng cho phép quyền Microphone trên trình duyệt để thu âm bài nói!');
+                        updateVoiceStatusUI(false, '⚠️ Chưa cấp quyền Mic');
+                    }
+                };
+
+                speechRec.onend = () => {
+                    if (isVoiceRecording && battleStage === 'speech') {
+                        try { speechRec.start(); } catch(e){}
+                    } else {
+                        updateVoiceStatusUI(false);
+                    }
+                };
+
+                speechRec.start();
+            } catch(e) {
+                console.warn('Cannot start speech rec:', e);
+            }
+        }
+
+        function stopVoiceRecording() {
+            isVoiceRecording = false;
+            if (speechRec) {
+                try { speechRec.stop(); } catch(e){}
+            }
+            updateVoiceStatusUI(false);
+            if (speechStartTime > 0) {
+                speechDurationSeconds = Math.max(5, Math.round((Date.now() - speechStartTime) / 1000));
+            }
+        }
+
         function beginBattle() {
             stopBattleTimer();
+            stopVoiceRecording();
+            speechStartTime = 0;
+            speechDurationSeconds = 0;
+            recordedTranscript = '';
+            const txt = document.getElementById('liveSpeechTranscript');
+            if (txt) txt.value = '';
+            const wc = document.getElementById('speechWordCount');
+            if (wc) wc.textContent = '0 từ';
+            updateVoiceStatusUI(false, '⚪ Micro đang sẵn sàng');
+
             battleStage = 'ready';
             battleRemaining = 60;
-            battleTopicNow = B_TOPICS[Math.floor(Math.random() * B_TOPICS.length)];
-            battleMySide = Math.random() < .5 ? 'Đội ủng hộ' : 'Đội phản đối';
+            if (!isSoloBattle) {
+                battleTopicNow = B_TOPICS[Math.floor(Math.random() * B_TOPICS.length)];
+                battleMySide = Math.random() < .5 ? 'Đội ủng hộ' : 'Đội phản đối';
+                document.getElementById('opponentName').textContent = B_NAMES[Math.floor(Math.random() * B_NAMES.length)];
+                document.getElementById('matchStatus').textContent = 'Đã ghép cặp thành công! Đối thủ đang sẵn sàng.';
+                document.getElementById('mySide').textContent = battleMySide;
+                document.getElementById('opSide').textContent = battleMySide === 'Đội ủng hộ' ? 'Đội phản đối' : 'Đội ủng hộ';
+                document.getElementById('battleTopic').textContent = battleTopicNow;
+                document.getElementById('screenTopic').textContent = battleTopicNow;
+            }
             const arena = document.getElementById('battleArena');
             arena.hidden = false;
-            document.getElementById('matchStatus').textContent = 'Đã ghép cặp thành công! Đối thủ đang sẵn sàng.';
-            document.getElementById('opponentName').textContent = B_NAMES[Math.floor(Math.random() * B_NAMES.length)];
-            document.getElementById('mySide').textContent = battleMySide;
-            document.getElementById('opSide').textContent = battleMySide === 'Đội ủng hộ' ? 'Đội phản đối' : 'Đội ủng hộ';
-            document.getElementById('battleTopic').textContent = battleTopicNow;
-            document.getElementById('screenTopic').textContent = battleTopicNow;
             document.getElementById('battlePhase').textContent = 'Chuẩn bị';
             document.getElementById('battleStart').textContent = 'Bắt đầu chuẩn bị 60 giây';
             document.getElementById('battleStart').disabled = false;
@@ -2454,10 +2608,9 @@
                 showBattleTime();
                 if (battleRemaining <= 0) {
                     stopBattleTimer();
-                    next()
+                    next();
                 }
-            }
-                , 1000)
+            }, 1000);
         }
         function startBattlePrep(broadcast = true) {
             if (battleStage !== 'ready')
@@ -2479,10 +2632,20 @@
             if (broadcast) {
                 sendNetworkMessage({ type: 'SYNC_PHASE', phase: 'speech' });
             }
-            runBattleClock(120, () => openBattleScoring());
+            if (isSoloBattle) {
+                startVoiceRecording();
+            }
+            runBattleClock(120, () => {
+                if (isSoloBattle) {
+                    finishAndScoreWithAi();
+                } else {
+                    openBattleScoring();
+                }
+            });
         }
         function openBattleScoring() {
             stopBattleTimer();
+            stopVoiceRecording();
             battleStage = 'score';
             document.getElementById('battlePhase').textContent = 'Tự đánh giá';
             document.getElementById('battlePresentation').hidden = true;
@@ -2516,6 +2679,267 @@
             toast('Bạn nhận được ' + reward + ' xu từ SkillUp Battle!');
             const myName = isRoomHost ? (rooms[activeRoom]?.host || 'Chủ phòng') : (pf.n || 'Đối thủ');
             sendNetworkMessage({ type: 'OPPONENT_SCORE', score, name: myName });
+        }
+
+        function evaluatePresentationAI(transcript, durationSec, topic) {
+            const text = (transcript || '').trim();
+            const words = text ? text.split(/\s+/).filter(Boolean) : [];
+            const wordCount = words.length;
+            const duration = Math.max(durationSec || 15, 10);
+            const wpm = Math.round((wordCount / duration) * 60);
+            const lower = text.toLowerCase();
+
+            // 1. Cấu trúc (Mở - Thân - Kết)
+            const openings = ['xin chào', 'kính chào', 'chào thầy', 'chào cô', 'chào các bạn', 'chào mọi người', 'hôm nay', 'tôi xin', 'mình xin', 'giới thiệu', 'chủ đề', 'bài thuyết trình', 'em xin', 'hello', 'hi mọi người'];
+            const closings = ['tóm lại', 'kết luận', 'chính vì vậy', 'lời cuối', 'cảm ơn', 'lắng nghe', 'chúc mọi người', 'hy vọng', 'chia sẻ', 'đó là toàn bộ'];
+            const hasOpening = openings.some(k => lower.includes(k));
+            const hasClosing = closings.some(k => lower.includes(k));
+
+            let scoreStructure = 6;
+            if (hasOpening) scoreStructure += 7;
+            if (hasClosing) scoreStructure += 7;
+            if (wordCount < 15) scoreStructure = Math.min(scoreStructure, 8);
+            scoreStructure = Math.min(20, Math.max(5, scoreStructure));
+
+            // 2. Từ nối & Mạch lạc
+            const transitions = [
+                'đầu tiên', 'thứ nhất', 'thứ hai', 'thứ ba', 'tiếp theo', 'sau đó',
+                'ngoài ra', 'bên cạnh đó', 'hơn nữa', 'mặt khác', 'tuy nhiên',
+                'ví dụ', 'chẳng hạn', 'cụ thể là', 'vì vậy', 'do đó', 'bởi vì',
+                'theo tôi', 'theo mình', 'quan điểm của tôi', 'thực tế'
+            ];
+            const matchedTransitions = transitions.filter(t => lower.includes(t));
+            let scoreTransitions = Math.min(20, 6 + matchedTransitions.length * 3);
+            if (wordCount < 15) scoreTransitions = Math.min(scoreTransitions, 7);
+
+            // 3. Tốc độ nói & Phân bổ thời gian (WPM)
+            let scorePacing = 10;
+            let pacingFeedback = '';
+            if (wordCount < 20) {
+                scorePacing = 6;
+                pacingFeedback = 'Bài nói còn khá ngắn. Hãy mở rộng thêm các luận điểm và dẫn chứng thực tế.';
+            } else if (wpm >= 90 && wpm <= 145) {
+                scorePacing = 20;
+                pacingFeedback = `Tốc độ nói rất lý tưởng (~${wpm} từ/phút), giúp người nghe dễ dàng tiếp thu thông tin.`;
+            } else if (wpm >= 65 && wpm < 90) {
+                scorePacing = 16;
+                pacingFeedback = `Tốc độ nói hơi thong thả (~${wpm} từ/phút), hãy tăng nhịp một chút ở các luận điểm trọng tâm.`;
+            } else if (wpm > 145 && wpm <= 180) {
+                scorePacing = 15;
+                pacingFeedback = `Tốc độ nói hơi nhanh (~${wpm} từ/phút), nên ngắt nghỉ 1-2 giây sau mỗi ý chính.`;
+            } else if (wpm > 180) {
+                scorePacing = 11;
+                pacingFeedback = `Nói quá nhanh (~${wpm} từ/phút), người nghe có thể bị ngợp và khó theo dõi kịp.`;
+            } else {
+                scorePacing = 10;
+                pacingFeedback = `Tốc độ nói còn ngập ngừng (~${wpm} từ/phút), hãy chuẩn bị dàn ý từ khóa để nói tự tin hơn.`;
+            }
+
+            // 4. Bám sát chủ đề
+            const topicTokens = topic.toLowerCase().replace(/[^a-z0-9à-ỹ\s]/g, '').split(/\s+/).filter(w => w.length > 2);
+            const matchedKeywords = topicTokens.filter(k => lower.includes(k));
+            const relevanceRatio = topicTokens.length > 0 ? (matchedKeywords.length / topicTokens.length) : 0.5;
+            let scoreRelevance = Math.min(20, Math.max(6, Math.round(10 + relevanceRatio * 10)));
+            if (wordCount < 15) scoreRelevance = Math.min(scoreRelevance, 8);
+
+            // 5. Độ tự tin & Lưu loát
+            const fillers = ['ờ', 'à', 'ừm', 'um', 'uh', 'kiểu như', 'thì là mà', 'hở'];
+            let fillerCount = 0;
+            fillers.forEach(f => {
+                const regex = new RegExp('\\b' + f + '\\b', 'gi');
+                const m = lower.match(regex);
+                if (m) fillerCount += m.length;
+            });
+            let scoreFluency = 20;
+            if (wordCount < 15) scoreFluency = 8;
+            else if (fillerCount > 5) scoreFluency = 12;
+            else if (fillerCount > 2) scoreFluency = 16;
+
+            const totalScore = Math.min(100, Math.max(20, scoreStructure + scoreTransitions + scorePacing + scoreRelevance + scoreFluency));
+
+            const strengths = [];
+            if (hasOpening) strengths.push('Có câu chào và giới thiệu chủ đề rõ ràng, tạo ấn tượng chuyên nghiệp.');
+            if (hasClosing) strengths.push('Có phần tóm lược thông điệp và lời cảm ơn người nghe chu đáo.');
+            if (matchedTransitions.length >= 2) strengths.push(`Vận dụng tốt các từ liên kết luận điểm (${matchedTransitions.slice(0, 3).join(', ')}).`);
+            if (wpm >= 85 && wpm <= 150 && wordCount >= 25) strengths.push('Tốc độ nói đều và nhịp nhàng, âm lượng và nhịp điệu dễ theo dõi.');
+            if (fillerCount === 0 && wordCount >= 25) strengths.push('Không bị lặp từ đệm (ờ, à, ừm), thể hiện phong thái tự tin trước đám đông.');
+            if (strengths.length === 0) strengths.push('Đã can đảm đứng trước màn hình nói thành tiếng và hoàn thành trọn vẹn bài thuyết trình.');
+
+            const improvements = [];
+            if (!hasOpening) improvements.push('Nên mở đầu bằng 1 câu chào và nêu rõ lý do chủ đề này quan trọng trong 15 giây đầu.');
+            if (!hasClosing) improvements.push('Nên bổ sung câu chốt tóm lại thông điệp và gửi lời cảm ơn trước khi kết thúc bài nói.');
+            if (matchedTransitions.length < 2) improvements.push('Hãy dùng thêm các liên từ (Ví dụ: "Thứ nhất là...", "Bên cạnh đó...", "Theo tôi...") để bài nói có bố cục mạch lạc.');
+            if (pacingFeedback) improvements.push(pacingFeedback);
+            if (fillerCount >= 2) improvements.push(`Phát hiện khoảng ${fillerCount} lần ngập ngừng ("ờ", "à"). Hãy tập thói quen dừng thở một nhịp thay vì phát ra âm đệm.`);
+            if (wordCount < 30) improvements.push('Hãy đưa thêm ví dụ thực tế hoặc câu chuyện cá nhân để bài nói sinh động và thuyết phục hơn.');
+
+            return {
+                totalScore,
+                wordCount,
+                durationSeconds: duration,
+                wpm,
+                scores: {
+                    structure: scoreStructure,
+                    transitions: scoreTransitions,
+                    pacing: scorePacing,
+                    relevance: scoreRelevance,
+                    fluency: scoreFluency
+                },
+                strengths,
+                improvements,
+                sampleOpening: `“Xin chào mọi người! Hôm nay tôi rất hào hứng được chia sẻ góc nhìn của mình về chủ đề: ‘${topic}’…”`,
+                sampleClosing: `“Tóm lại, thông qua những dẫn chứng vừa nêu, tôi tin rằng… Rất cảm ơn mọi người đã chú ý lắng nghe!”`,
+                transcript: text || '(Chưa phát hiện âm thanh hoặc bài nói trống)'
+            };
+        }
+
+        function finishAndScoreWithAi() {
+            stopBattleTimer();
+            stopVoiceRecording();
+            battleStage = 'score';
+            document.getElementById('battleStart').textContent = 'Đã hoàn thành';
+            document.getElementById('battleStart').disabled = true;
+            document.getElementById('battlePresentation').hidden = true;
+            document.getElementById('battleScoring').hidden = true;
+
+            const resBox = document.getElementById('battleResult');
+            resBox.hidden = false;
+            resBox.innerHTML = `
+                <div style="text-align:center;padding:26px 14px">
+                    <div style="font-size:38px;margin-bottom:10px;animation:pulse-mic 1s infinite">🤖</div>
+                    <h3>Huấn luyện viên AI đang phân tích bài nói của bạn…</h3>
+                    <p class="mut" style="margin-top:6px">Đang chấm điểm cấu trúc, nhịp điệu, từ nối và độ tự tin…</p>
+                </div>
+            `;
+            resBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            setTimeout(() => {
+                const currentText = document.getElementById('liveSpeechTranscript')?.value || recordedTranscript || '';
+                const result = evaluatePresentationAI(currentText, speechDurationSeconds, battleTopicNow);
+                renderAiEvaluationResult(result);
+            }, 1200);
+        }
+
+        function renderAiEvaluationResult(res) {
+            const won = res.totalScore >= 70;
+            const reward = won ? 50 : 25;
+            coins += reward;
+            battleEarned += reward;
+            battleCount++;
+            battleBest = Math.max(battleBest, res.totalScore);
+            ls.s('su-coins', coins);
+            ls.s('su-b-count', battleCount);
+            ls.s('su-b-best', battleBest);
+            ls.s('su-b-coins', battleEarned);
+            renderBattle();
+            renderRewards();
+
+            const rank = res.totalScore >= 85 ? '🏆 Xuất sắc' : (res.totalScore >= 70 ? '👏 Khá tốt' : '💪 Khởi đầu tốt - Cần luyện thêm');
+            const scoreColor = res.totalScore >= 70 ? 'var(--g)' : '#c2410c';
+
+            const criteriaList = [
+                { name: '🎯 Bám sát chủ đề & Luận điểm', val: res.scores.relevance },
+                { name: '🏛️ Cấu trúc bài nói (Mở - Thân - Kết)', val: res.scores.structure },
+                { name: '🔗 Từ nối & Độ mạch lạc', val: res.scores.transitions },
+                { name: '⏱️ Tốc độ & Phân bổ thời gian', val: res.scores.pacing },
+                { name: '🗣️ Độ tự tin & Lưu loát', val: res.scores.fluency }
+            ];
+
+            const resBox = document.getElementById('battleResult');
+            resBox.hidden = false;
+            resBox.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px">
+                    <div>
+                        <span class="reward-tag" style="background:#e8f5e9;color:var(--g)">✨ KẾT QUẢ TỪ AI COACH</span>
+                        <h3 style="margin-top:6px">Đánh giá bài thuyết trình cá nhân</h3>
+                    </div>
+                    <span style="font-size:14px;font-weight:700;color:var(--mut)">${rank}</span>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:16px 0">
+                    <div style="font-size:42px;font-weight:900;color:${scoreColor};line-height:1">
+                        ${res.totalScore}<span style="font-size:20px;font-weight:600;color:var(--mut)">/100</span>
+                    </div>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px">
+                        <div class="card" style="padding:8px 14px;background:var(--soft)">⏱️ Thời lượng: <b>${res.durationSeconds}s</b></div>
+                        <div class="card" style="padding:8px 14px;background:var(--soft)">📝 Tổng số từ: <b>${res.wordCount} từ</b></div>
+                        <div class="card" style="padding:8px 14px;background:var(--soft)">⚡ Tốc độ: <b>${res.wpm} WPM</b></div>
+                    </div>
+                </div>
+
+                <div style="margin:18px 0">
+                    <h4 style="margin-bottom:10px">📊 Chi tiết 5 tiêu chí chấm điểm</h4>
+                    ${criteriaList.map(c => `
+                        <div style="margin-bottom:9px">
+                            <div style="display:flex;justify-content:space-between;font-size:13.5px">
+                                <span>${c.name}</span>
+                                <b>${c.val}/20</b>
+                            </div>
+                            <div class="ai-crit-bar">
+                                <div class="ai-crit-fill" style="width:${(c.val / 20) * 100}%;background:${c.val >= 14 ? 'var(--g)' : '#f2c14e'}"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="margin:18px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+                    <div class="card" style="background:var(--bg);border-left:4px solid var(--g)">
+                        <b style="color:var(--g);display:block;margin-bottom:6px">✅ Điểm bạn làm rất tốt</b>
+                        <ul style="padding-left:18px;font-size:13.5px;line-height:1.6">
+                            ${res.strengths.map(s => `<li>${esc(s)}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="card" style="background:var(--bg);border-left:4px solid #f2c14e">
+                        <b style="color:#b45309;display:block;margin-bottom:6px">💡 Lời khuyên cải thiện từ AI</b>
+                        <ul style="padding-left:18px;font-size:13.5px;line-height:1.6">
+                            ${res.improvements.map(im => `<li>${esc(im)}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" style="background:var(--soft);margin:14px 0;font-size:13.5px">
+                    <b style="display:block;margin-bottom:6px">🎯 Gợi ý mẫu câu từ Huấn luyện viên AI:</b>
+                    <p style="margin-bottom:6px"><b>Mở đầu gợi ý:</b> <span style="font-style:italic">${esc(res.sampleOpening)}</span></p>
+                    <p><b>Kết luận gợi ý:</b> <span style="font-style:italic">${esc(res.sampleClosing)}</span></p>
+                </div>
+
+                <details style="margin:14px 0;font-size:13.5px;background:var(--card);padding:10px 14px;border:1px solid var(--line);border-radius:10px">
+                    <summary style="font-weight:600;cursor:pointer">📄 Xem lại toàn văn bài nói (Transcript)</summary>
+                    <p style="margin-top:8px;line-height:1.6;color:var(--ink);background:var(--bg);padding:10px;border-radius:8px">
+                        ${esc(res.transcript)}
+                    </p>
+                </details>
+
+                <p style="margin-top:12px;font-size:14px">
+                    <b>🪙 +${reward} xu SkillUp</b> đã được cộng vào tài khoản của bạn!
+                </p>
+
+                <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+                    <button class="btn" id="retrySoloBtn">🔄 Luyện lại bài này</button>
+                    <button class="btn o" id="nextSoloTopicBtn">🎲 Chọn chủ đề mới</button>
+                    <a class="btn o" href="#doi-qua" style="display:inline-block;text-decoration:none">🎁 Đổi quà</a>
+                </div>
+            `;
+
+            document.getElementById('retrySoloBtn').addEventListener('click', () => {
+                isSoloBattle = true;
+                beginBattle();
+                document.getElementById('battleTopic').textContent = battleTopicNow;
+                document.getElementById('screenTopic').textContent = battleTopicNow;
+                document.getElementById('opponentName').textContent = 'AI Chấm điểm';
+                document.getElementById('mySide').textContent = 'Luyện tập cá nhân';
+                document.getElementById('opSide').textContent = 'Huấn luyện viên AI';
+                document.getElementById('soloNote').textContent = 'Đang luyện tập với Huấn luyện viên AI về chủ đề: ' + battleTopicNow;
+            });
+
+            document.getElementById('nextSoloTopicBtn').addEventListener('click', () => {
+                const nextIdx = Math.floor(Math.random() * B_TOPICS.length);
+                const sSel = document.getElementById('soloTopic');
+                if (sSel) sSel.value = nextIdx;
+                document.getElementById('soloStart').click();
+            });
+
+            toast(`🎉 AI đã chấm xong! Bạn đạt ${res.totalScore}/100 điểm (+${reward} xu)`);
         }
 
         // Online Multiplayer via Secure WebSocket (MQTT Cloud Relay)
@@ -2827,20 +3251,45 @@
         const soloSel = document.getElementById('soloTopic');
         soloSel.innerHTML = B_TOPICS.map((t, i) => `<option value="${i}">${esc(t)}</option>`).join('');
         document.getElementById('soloStart').addEventListener('click', () => {
+            isSoloBattle = true;
             beginBattle();
             const topic = B_TOPICS[+soloSel.value];
             document.getElementById('battleTopic').textContent = topic;
             document.getElementById('screenTopic').textContent = topic;
-            document.getElementById('opponentName').textContent = 'Tự luyện';
+            document.getElementById('opponentName').textContent = 'AI Chấm điểm';
             document.getElementById('mySide').textContent = 'Luyện tập cá nhân';
-            document.getElementById('opSide').textContent = 'Tự đánh giá';
-            document.getElementById('soloNote').textContent = 'Đang luyện tập cá nhân với chủ đề: ' + topic;
+            document.getElementById('opSide').textContent = 'Huấn luyện viên AI';
+            document.getElementById('soloNote').textContent = 'Đang luyện tập với Huấn luyện viên AI về chủ đề: ' + topic;
+        });
+
+        // Voice AI presentation controls
+        document.getElementById('toggleVoiceBtn').addEventListener('click', () => {
+            if (isVoiceRecording) {
+                stopVoiceRecording();
+            } else {
+                startVoiceRecording();
+            }
+        });
+        document.getElementById('clearVoiceBtn').addEventListener('click', () => {
+            recordedTranscript = '';
+            const t = document.getElementById('liveSpeechTranscript');
+            if (t) t.value = '';
+            const wc = document.getElementById('speechWordCount');
+            if (wc) wc.textContent = '0 từ';
+            toast('Đã làm mới nội dung bài nói!');
+        });
+        document.getElementById('finishAndScoreWithAi').addEventListener('click', finishAndScoreWithAi);
+        document.getElementById('finishSpeechManual').addEventListener('click', () => {
+            stopVoiceRecording();
+            openBattleScoring();
         });
 
         renderRoom();
-        document.getElementById('findOpponent').addEventListener('click', beginBattle);
+        document.getElementById('findOpponent').addEventListener('click', () => {
+            isSoloBattle = false;
+            beginBattle();
+        });
         document.getElementById('battleStart').addEventListener('click', () => startBattlePrep(true));
-        document.getElementById('finishSpeech').addEventListener('click', openBattleScoring);
         document.getElementById('submitBattleScore').addEventListener('click', submitBattle);
         renderBattle();
 
